@@ -1,0 +1,79 @@
+<%- include('../layouts/header') %>
+
+<section class="content-body">
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-12">
+        <div class="card">
+          <div class="card-header d-flex align-items-center justify-content-between">
+            <h4 class="card-title mb-0"><%= title %></h4>
+          <a href="javascript:void(0);" onclick="window.history.back();" class="btn btn-primary btn-sm">
+  <i class="fa fa-arrow-left"></i> Back
+</a>
+          </div>
+
+      <div class="card-body">
+  <table class="table table-bordered table-striped">
+    <tbody>
+      
+      <tr><th>Name</th><td><%= request.name || 'N/A' %></td></tr>
+      <tr><th>Position</th><td><%= request.position || 'N/A' %></td></tr>
+      <tr><th>Mobile</th><td><%= request.mobile || 'N/A' %></td></tr>
+      <tr><th>Email</th><td><%= request.email || 'N/A' %></td></tr>
+      <tr><th>Date of Birth</th><td>
+       <%= request.date_of_birth
+        ? new Date(request.date_of_birth).toLocaleString('en-GB', { 
+            day: '2-digit', 
+            month: '2-digit', 
+            year: 'numeric', 
+            hour: '2-digit', 
+            minute: '2-digit', 
+            hour12: true 
+          }) 
+        : '-' %>
+      
+      </td></tr>
+      <tr><th>Father Name</th><td><%= request.father_name || 'N/A' %></td></tr>
+      <tr><th>Qualification</th><td><%= request.qualification || 'N/A' %></td></tr>
+      <tr><th>Marital Status</th><td><%= request.marital_status || 'N/A' %></td></tr>
+      <tr><th>Division</th><td><%= request.division || 'N/A' %></td></tr>
+      <tr><th>Subject</th><td><%= request.subject || 'N/A' %></td></tr>
+      <tr><th>Experience</th><td><%= request.experience || 'N/A' %></td></tr>
+      <tr><th>Preferred Location 1</th><td><%= request.preferred_location1 || 'N/A' %></td></tr>
+      <tr><th>Preferred Location 2</th><td><%= request.preferred_location2 || 'N/A' %></td></tr>
+      <tr><th>Preferred Location 3</th><td><%= request.preferred_location3 || 'N/A' %></td></tr>
+      <tr><th>Applying For</th><td><%= request.applying_for || 'N/A' %></td></tr>
+      <tr><th>Expected Salary</th><td><%= request.expected_salary || 'N/A' %></td></tr>
+      <tr><th>Current Salary</th><td><%= request.current_salary || 'N/A' %></td></tr>
+      <tr><th>Current Organization</th><td><%= request.current_organization || 'N/A' %></td></tr>
+      <tr><th>Current Location</th><td><%= request.current_location || 'N/A' %></td></tr>
+      <tr><th>Address</th><td><%= request.address || 'N/A' %></td></tr>
+      <tr><th>Pin Code</th><td><%= request.pin_code || 'N/A' %></td></tr>
+      <tr><th>City</th><td><%= request.city || 'N/A' %></td></tr>
+      <tr><th>State</th><td><%= request.state || 'N/A' %></td></tr>
+      <tr><th>Agree Terms</th><td><%= request.agree_terms === 1 ? 'Yes' : 'No' %></td></tr>
+      <tr><th>Created At</th><td>
+      <%= request.created_at
+        ? new Date(request.created_at).toLocaleString('en-GB', { 
+            day: '2-digit', 
+            month: '2-digit', 
+            year: 'numeric', 
+            hour: '2-digit', 
+            minute: '2-digit', 
+            hour12: true 
+          }) 
+        : '-' %>
+      
+      </td></tr>
+      
+    </tbody>
+  </table>
+</div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<%- include('../layouts/footer') %>

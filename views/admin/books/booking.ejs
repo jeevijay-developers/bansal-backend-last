@@ -1,0 +1,264 @@
+<%- include('../layouts/header') %>
+
+<section class="content-body">
+  <div class="container-fluid">
+    <div class="page-header">
+      <!-- Page header content if needed -->
+    </div>
+
+    <div class="row">
+      <div class="col-12">
+        <div class="card">
+     <div class="card-header d-flex align-items-center justify-content-between">
+  <h4 class="card-title mb-0"><%= page_name %></h4>
+
+  <div class="d-flex align-items-center gap-2">
+    <!-- Back Button -->
+  
+
+    <!-- Per Page Dropdown -->
+    <div class="d-flex align-items-center">
+      <label for="perPageSelect" class="form-label mb-0 me-2">Show:</label>
+      <select id="perPageSelect" class="form-control form-control-sm">
+        <option value="50" <%= query.per_page==='50'?'selected':'' %>>50</option>
+        <option value="100" <%= query.per_page==='100'?'selected':'' %>>100</option>
+        <option value="500" <%= query.per_page==='500'?'selected':'' %>>500</option>
+      </select>
+    </div>
+      <button type="button" id="backButton" class="btn btn-primary btn-sm">
+      <i class="fa fa-arrow-left"></i> Back
+    </button>
+  </div>
+</div>
+
+          <div class="card-body">
+                   <!-- <div class="col-md-2">
+    <label for="perPageSelect" class="form-label">Show per page:</label>
+    <select id="perPageSelect" class="form-control">
+      <option value="50" <%= query.per_page==='50'?'selected':'' %>>50</option>
+      <option value="100" <%= query.per_page==='100'?'selected':'' %>>100</option>
+      <option value="500" <%= query.per_page==='500'?'selected':'' %>>500</option>
+    </select>
+  </div> -->
+ 
+     <label for="perPageSelect" class="form-label mt-3">Filter:</label>
+           <form id="bookingFilterForm" method="GET" class="row mb-3">
+  <div class="col-md-2">
+    <input type="text" name="search" class="form-control" placeholder="Search by Order ID / Customer" value="<%= query.search || '' %>">
+  </div>
+  <div class="col-md-2">
+    <input type="date" name="date_from" class="form-control" value="<%= query.date_from || '' %>">
+  </div>
+
+  <div class="col-md-2">
+    <input type="date" name="date_to" class="form-control" value="<%= query.date_to || '' %>">
+  </div>
+
+  <div class="col-md-2">
+    <select name="order_source" class="form-control">
+      <option value="">All Sources</option>
+      <option value="web" <%= query.order_source==='web'?'selected':'' %>>Web</option>
+      <option value="app" <%= query.order_source==='app'?'selected':'' %>>App</option>
+    </select>
+  </div>
+  <div class="col-md-2">
+    <select name="payment_status" class="form-control">
+      <option value="">All Payment Status</option>
+      <option value="pending" <%= query.payment_status==='pending'?'selected':'' %>>Pending</option>
+      <option value="paid" <%= query.payment_status==='paid'?'selected':'' %>>Paid</option>
+      
+    </select>
+  </div>
+  <div class="col-md-2">
+    <select name="order_status" class="form-control">
+      <option value="">All Order Status</option>
+      <option value="pending" <%= query.order_status==='pending'?'selected':'' %>>Pending</option>
+      <option value="confirmed" <%= query.order_status==='confirmed'?'selected':'' %>>Confirmed</option>
+      <option value="shipped" <%= query.order_status==='shipped'?'selected':'' %>>Shipped</option>
+      <option value="out_for_delivery" <%= query.order_status==='out_for_delivery'?'selected':'' %>>Out For Delivery</option>
+      <option value="delivered" <%= query.order_status==='delivered'?'selected':'' %>>Delivered</option>
+      <option value="cancelled" <%= query.order_status==='cancelled'?'selected':'' %>>Cancelled</option>
+    </select>
+  </div>
+  <div class="col-md-2 mt-3">
+    <button type="submit" class="btn btn-primary">Filter</button>
+   <button type="button" class="btn btn-secondary" id="resetBtn">Reset</button>
+    
+  </div>
+</form>
+ <div class="table-info mb-2">
+  Showing <%= startRecord %> to <%= endRecord %> of <%= totalRecords %> entries
+</div>
+            <div class="table-responsive">
+              <table id="" class="table bordered display table-responsive-lg">
+                <thead>
+                  <tr>
+                    <th>Sr.No #</th>
+                  
+                    <th>order Id</th>
+                    <th>Customer Name</th>
+                    <!-- <th>Transaction Id</th> -->
+
+                    <!-- <th>Order Items</th> -->
+                    <th>Price</th>
+                    <th>Order Date</th>
+                    <th>Order Source</th>
+                    <th>Payment Status</th>
+                      <th>Order Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% bookings.forEach((booking, index) => { %>
+                  <tr>
+                    <td><%= index + 1 %></td>
+                    
+                    <td>
+                      <a
+                        href="/admin/book-booking-details/<%= booking.id %>"
+                        class="" style="text-decoration:none"
+                      ><i class="fas fa-eye"></i>
+                      <%= booking.order_id %>
+                    </a>
+                  </td>
+                    <td><%= booking.customer_name %></td>
+                    <!-- <td><%= booking.transaction_id %></td> -->
+
+                    <!-- <td>
+                      <%= booking.details.length %> <%= booking.details.length >
+                      1 ? 'Items' : 'Item' %>
+                      <% if (booking.details && booking.details.length > 0) { %>
+                          <ul class="mb-0">
+                            <% booking.details.forEach(item => { %>
+                              <li><%= item.item_name %> x <%= item.quantity %> = ₹<%= item.price %></li>
+                            <% }) %>
+                          </ul>
+                        <% } else { %>
+                          N/A
+                        <% } %>
+                    </td> -->
+                    <td>₹<%= booking.total_amount %></td>
+              
+                    <td>
+  <%= booking.created_at
+        ? new Date(booking.created_at).toLocaleString('en-GB', { 
+            day: '2-digit', 
+            month: '2-digit', 
+            year: 'numeric', 
+            hour: '2-digit', 
+            minute: '2-digit', 
+            hour12: true 
+          }) 
+        : '-' %>
+</td>
+                    <td><%= booking.booking_source %></td>
+                    <td><%= booking.payment_status %></td>
+                    <td><%= booking.order_status %></td>
+<td>
+  <% 
+    let statusFlow = ['pending', 'confirmed', 'shipped', 'out_for_delivery', 'delivered'];
+    let currentIndex = statusFlow.indexOf(booking.order_status);
+  %>
+
+  <% if(currentIndex >= 0 && booking.order_status !== 'delivered' && booking.order_status !== 'cancelled'){ %>
+    <select class="orderStatusSelect" data-order-id="<%= booking.id %>" data-order-display-id="<%= booking.order_id %>">
+      <!-- show current status as disabled selected -->
+      <option value="<%= booking.order_status %>" selected disabled>
+        <%= booking.order_status.replace(/_/g,' ') %>
+      </option>
+
+      <!-- show next possible statuses -->
+      <% for(let i = currentIndex + 1; i < statusFlow.length; i++) { %>
+        <option value="<%= statusFlow[i] %>"><%= statusFlow[i].replace(/_/g,' ') %></option>
+      <% } %>
+
+      <!-- optional: cancelled -->
+      <option value="cancelled">Cancelled</option>
+    </select>
+  <% } else { %>
+    <span><%= booking.order_status.replace(/_/g,' ') %></span>
+  <% } %>
+</td>
+
+                  </tr>
+                  <% }); %>
+                </tbody>
+              </table>
+              <nav>
+  <ul class="pagination">
+    <% for(let i = 1; i <= totalPages; i++) { %>
+      <li class="page-item <%= currentPage===i?'active':'' %>">
+<a class="page-link" href="?<%= Object.keys(query).map(k => k+'='+query[k]).join('&') %>&page=<%= i %>"><%= i %></a>
+      </li>
+    <% } %>
+  </ul>
+</nav>
+<div class="table-info mb-2">
+  Showing <%= startRecord %> to <%= endRecord %> of <%= totalRecords %> entries
+</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<script>
+  document.querySelectorAll('.orderStatusSelect').forEach(select => {
+    select.addEventListener('change', async function() {
+      const orderId = this.dataset.orderId;
+       const orderDisplayId = this.dataset.orderDisplayId;
+      const newStatus = this.value;
+
+      try {
+        const response = await fetch(`/admin/book-order-update-status/${orderId}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ status: newStatus })
+        });
+
+        const result = await response.json();
+
+        if(result.success){
+
+          alert(`Order #${orderDisplayId} status updated to "${newStatus}"`);
+  location.reload(); // refresh page to see updated data
+        } else {
+          alert('Failed: ' + result.message);
+        }
+      } catch (err) {
+        console.error(err);
+        alert('Server error while updating status');
+      }
+    });
+  });
+</script>
+
+<script>
+document.getElementById('bookingFilterForm').addEventListener('submit', function(e) {
+    e.preventDefault(); 
+    const params = new URLSearchParams(new FormData(this)).toString();
+    window.location.href = `/admin/book-booking-list?${params}`;
+  });
+
+  // Handle perPage selector
+  document.getElementById('perPageSelect').addEventListener('change', function() {
+    const per_page = this.value;
+    const params = new URLSearchParams(window.location.search);
+    params.set('per_page', per_page);
+    params.set('page', 1); // reset page
+    window.location.search = params.toString();
+  });
+
+  // Reset all filters button
+  document.getElementById('resetBtn').addEventListener('click', function() {
+    const defaultPerPage = document.getElementById('perPageSelect').value || '50';
+    // Redirect with only default per_page, remove all other query params
+    window.location.href = `/admin/book-booking-list?per_page=${defaultPerPage}&page=1`;
+  });
+</script>
+
+
+<%- include('../layouts/footer') %>

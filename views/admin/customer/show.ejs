@@ -1,0 +1,242 @@
+<%- include('../layouts/header') %>
+<style>
+    .tab{
+  list-style:none;
+}
+.tab li{
+  display:inline-block;
+  margin-right:20px;
+  background: #DDDD;
+  padding: 10px;
+}
+.tab li a{
+  text-decoration: none;
+}
+.tab li.active a{
+  color:red;
+}
+
+ul{
+  list-style: none;
+}
+
+.tab-content li{
+  display: none;
+}
+
+.tab-content li.active{
+  display: block
+}
+
+</style>
+  <div class="content-body">
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-12">
+          <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+              <ul class="tab mb-0 p-0">
+          <li>
+            <a href="/admin/student-show/<%= customer.id %>" class="tab-link">Student Details</a>
+          </li>
+          <li>
+            <a href="/admin/student-course-booking/<%= customer.id %>" class="tab-link">Course Booking</a>
+          </li>
+          <li>
+            <a href="/admin/student-test-series-booking/<%= customer.id %>" class="tab-link">Test Series Booking</a>
+          </li>
+        </ul>
+        
+<script>
+  // Get current URL
+  const currentUrl = window.location.pathname;
+
+  // Get all tab links
+  const links = document.querySelectorAll('.tab-link');
+
+  links.forEach(link => {
+    if (currentUrl.includes(link.getAttribute('href'))) {
+      link.parentElement.classList.add('active');
+    }
+  });
+</script>
+              <a href="/admin/student-list" class="btn btn-primary btn-sm">
+                <i class="fa fa-arrow-left"></i> Back
+              </a>
+            </div>
+            <div class="card-body">
+
+
+              <div class="row">
+                <!-- Course Name -->
+                <!-- Student Name -->
+                <div class="col-md-3">
+                  <div class="form-group border rounded p-3 mb-3">
+                    <label><strong>Student Name</strong></label>
+                    <p class="mb-0 text-muted">
+                      <%= customer.name || 'N/A' %>
+                    </p>
+                  </div>
+                </div>
+
+                <!-- Student Email -->
+                <div class="col-md-3">
+                  <div class="form-group border rounded p-3 mb-3">
+                    <label><strong>Student Email</strong></label>
+                    <p class="mb-0 text-muted">
+                      <%= customer.email || 'N/A' %>
+                    </p>
+                  </div>
+                </div>
+
+                <!-- Student Mobile -->
+                <div class="col-md-3">
+                  <div class="form-group border rounded p-3 mb-3">
+                    <label><strong>Student Mobile</strong></label>
+                    <p class="mb-0 text-muted">
+                      <%= customer.mobile || 'N/A' %>
+                    </p>
+                  </div>
+                </div>
+
+                <!-- Gender -->
+                <div class="col-md-3">
+                  <div class="form-group border rounded p-3 mb-3">
+                    <label><strong>Gender</strong></label>
+                    <p class="mb-0 text-muted">
+                      <%= customer.gender || 'N/A' %>
+                    </p>
+                  </div>
+                </div>
+
+                <!-- Role -->
+                <div class="col-md-3">
+                  <div class="form-group border rounded p-3 mb-3">
+                    <label><strong>Role</strong></label>
+                    <p class="mb-0 text-muted">Student</p>
+                  </div>
+                </div>
+
+                <!-- Date of Birth -->
+                <!-- <div class="col-md-3">
+  <div class="form-group border rounded p-3 mb-3">
+    <label><strong>Date of Birth</strong></label>
+    <p class="mb-0 text-muted"><%= customer.date_of_birth || 'N/A' %></p>
+  </div>
+</div> -->
+
+                <!-- Nationality -->
+                <!-- <div class="col-md-3">
+  <div class="form-group border rounded p-3 mb-3">
+    <label><strong>Nationality</strong></label>
+    <p class="mb-0 text-muted"><%= customer.nationality || 'N/A' %></p>
+  </div>
+</div> -->
+
+                <!-- Address -->
+                <!-- <div class="col-md-3">
+  <div class="form-group border rounded p-3 mb-3">
+    <label><strong>Address</strong></label>
+    <p class="mb-0 text-muted"><%= customer.address || 'N/A' %></p>
+  </div>
+</div> -->
+
+                <!-- City -->
+                <!-- <div class="col-md-3">
+  <div class="form-group border rounded p-3 mb-3">
+    <label><strong>City</strong></label>
+    <p class="mb-0 text-muted"><%= customer.city || 'N/A' %></p>
+  </div>
+</div> -->
+
+                <!-- State -->
+                <!-- <div class="col-md-3">
+  <div class="form-group border rounded p-3 mb-3">
+    <label><strong>State</strong></label>
+    <p class="mb-0 text-muted"><%= customer.state || 'N/A' %></p>
+  </div>
+</div> -->
+
+                <!-- Pincode -->
+                <!-- <div class="col-md-3">
+  <div class="form-group border rounded p-3 mb-3">
+    <label><strong>Pincode</strong></label>
+    <p class="mb-0 text-muted"><%= customer.pincode || 'N/A' %></p>
+  </div>
+</div> -->
+
+                <!-- Father Name -->
+                <!-- <div class="col-md-3">
+  <div class="form-group border rounded p-3 mb-3">
+    <label><strong>Father Name</strong></label>
+    <p class="mb-0 text-muted"><%= customer.father_name || 'N/A' %></p>
+  </div>
+</div> -->
+
+                <!-- Membership Date -->
+                <div class="col-md-3">
+                  <div class="form-group border rounded p-3 mb-3">
+                    <label><strong>Category Name</strong></label>
+                    <p class="mb-0 text-muted">
+                      <%= categoryDetails ? categoryDetails.category_name : 'N/A' %>
+                    </p>
+                  </div>
+                </div>
+
+                <div class="col-md-3">
+                  <div class="form-group border rounded p-3 mb-3">
+                    <label><strong>Course Class</strong></label>
+                    <p class="mb-0 text-muted">
+                      <%= courseClassDetails ? courseClassDetails.name : 'N/A' %>
+                    </p>
+                  </div>
+                </div>
+
+                <div class="col-md-3">
+                  <div class="form-group border rounded p-3 mb-3">
+                    <label><strong>Registration Type</strong></label>
+                    <p class="mb-0 text-muted">
+                      <%= customer.registration_type || 'N/A' %>
+                    </p>
+                  </div>
+                </div>
+
+                <div class="col-md-3">
+                  <div class="form-group border rounded p-3 mb-3">
+                    <label><strong>Status</strong></label>
+                    <p class="mb-0 text-muted">
+                      <%= customer.status==1 ? 'Active' : customer.status===0 ? 'Inactive' : 'N/A' %>
+                    </p>
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <div class="form-group border rounded p-3 mb-3">
+                    <label><strong>Registration Center</strong></label>
+                    <p class="mb-0 text-muted">
+                      <%= centerDetails ? centerDetails.name : 'N/A' %>
+                    </p>
+                  </div>
+                </div>
+                <!-- Profile Picture (Just showing if exists) -->
+                <div class="col-md-3">
+                  <div class="form-group border rounded p-3 mb-3">
+                    <label><strong>Profile Picture</strong></label>
+                    <% if (customer.profile_pic) { %>
+                      <img src="<%= customer.profile_pic %>" alt="Profile" style="max-width:100%;">
+                      <% } else { %>
+                        <p class="mb-0 text-muted">N/A</p>
+                        <% } %>
+                  </div>
+                </div>
+
+
+
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+</div>
+
+    <%- include('../layouts/footer') %>

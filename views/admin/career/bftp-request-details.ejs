@@ -1,0 +1,88 @@
+<%- include('../layouts/header') %>
+
+<section class="content-body">
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-12">
+        <div class="card">
+          <div class="card-header d-flex align-items-center justify-content-between">
+            <h4 class="card-title mb-0"><%= title %></h4>
+            <a href="javascript:void(0);" onclick="window.history.back();" class="btn btn-primary btn-sm">
+              <i class="fa fa-arrow-left"></i> Back
+            </a>
+          </div>
+
+          <div class="card-body">
+            <table class="table table-bordered table-striped">
+              <tbody>
+                <tr><th>Name</th><td><%= request.name || 'N/A' %></td></tr>
+                <tr><th>Mobile</th><td><%= request.mobile || 'N/A' %></td></tr>
+                <tr><th>Email</th><td><%= request.email || 'N/A' %></td></tr>
+                <tr><th>Date of Birth</th><td>
+                 <%= request.birthday
+        ? new Date(request.birthday).toLocaleString('en-GB', { 
+            day: '2-digit', 
+            month: '2-digit', 
+            year: 'numeric', 
+            hour: '2-digit', 
+            minute: '2-digit', 
+            hour12: true 
+          }) 
+        : '-' %>
+                
+                </td></tr>
+
+                
+                <tr><th>Father Name</th><td><%= request.fatherName || 'N/A' %></td></tr>
+                <tr><th>Qualification</th><td><%= request.qualification || 'N/A' %></td></tr>
+                <tr><th>Marital Status</th><td><%= request.maritalStatus || 'N/A' %></td></tr>
+                <tr><th>Division</th><td><%= request.division || 'N/A' %></td></tr>
+                <tr><th>Test Date</th><td>
+                <%= request.testDate
+        ? new Date(request.testDate).toLocaleString('en-GB', { 
+            day: '2-digit', 
+            month: '2-digit', 
+            year: 'numeric', 
+            hour: '2-digit', 
+            minute: '2-digit', 
+            hour12: true 
+          }) 
+        : '-' %>
+                
+                
+                </td></tr>
+
+       
+                <tr><th>IITian</th><td><%= request.iitian ? 'Yes' : 'No' %></td></tr>
+                <tr><th>Bansallite</th><td><%= request.bansallite ? 'Yes' : 'No' %></td></tr>
+                <tr><th>Subject</th><td><%= request.subject || 'N/A' %></td></tr>
+                <tr><th>Address</th><td><%= request.address || 'N/A' %></td></tr>
+                <tr><th>City</th><td><%= request.city || 'N/A' %></td></tr>
+                <tr><th>State</th><td><%= request.state || 'N/A' %></td></tr>
+                <tr><th>Pin Code</th><td><%= request.pincode || 'N/A' %></td></tr>
+                <tr><th>Agree Terms</th><td><%= request.agree ? 'Yes' : 'No' %></td></tr>
+                <tr><th>Created At</th><td>
+                 <%= request.created_at
+        ? new Date(request.testDate).toLocaleString('en-GB', { 
+            day: '2-digit', 
+            month: '2-digit', 
+            year: 'numeric', 
+            hour: '2-digit', 
+            minute: '2-digit', 
+            hour12: true 
+          }) 
+        : '-' %>
+                
+                
+                </td></tr>
+              </tbody>
+            </table>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<%- include('../layouts/footer') %>

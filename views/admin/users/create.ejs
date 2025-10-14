@@ -1,0 +1,190 @@
+<%- include('../layouts/header') %>
+
+<section class="content-body">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header d-flex align-items-user justify-content-between">
+                        <h4 class="card-title mb-0"><%= page_name %></h4>
+                        <a href="/admin/user-list" class="btn btn-primary btn-sm"><i class="fa fa-arrow-left"></i> Back</a>
+                    </div>
+
+                    <div class="card-body">
+                        <form id="submitForm" method="post" action="<%= form_url %>" enctype="multipart/form-data">
+                            <input type="hidden" name="_method" value="PUT"> <!-- for method override if needed -->
+
+                            <div class="row">
+
+                                <!-- <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="form-label">City</label>
+                                        <select name="city_id" class="form-control custom-select" required>
+                                            <option value="">Select Option</option>
+                                            <option value="1" <%= (user && user.city_id == 1) ? 'selected' : '' %>>Kota</option>
+                                            <option value="2" <%= (user && user.city_id == 2) ? 'selected' : '' %>>Ajmer</option>
+                                           
+                                        </select>
+                                    </div>
+                                </div> -->
+
+
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="form-label">Name *</label>
+                                        <input type="text" class="form-control" name="name" value="<%= (user && user.name) ? user.name : '' %>" required>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="form-label">Email *</label>
+                                        <input type="email" class="form-control" name="email" value="<%= (user && user.email) ? user.email : '' %>" required>
+                                    </div>
+                                </div>
+
+
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="form-label">Mobile No *</label>
+                                        <input type="text" class="form-control" name="mobile" value="<%= (user && user.mobile) ? user.mobile : '' %>" maxlength="10" required>
+                                    </div>
+                                </div>  
+
+<div class="col-md-6">
+  <div class="form-group">
+
+
+    <label class="form-label">Role *</label>
+    <select name="roles" class="form-control">
+      <% userRoles.forEach(role => { %>
+        <option value="<%= role.id %>" <%= user && user.role_id == role.id ? 'selected' : '' %>>
+          <%= role.name %>
+        </option>
+      <% }); %>
+    </select>
+  </div>
+</div>
+
+
+                                
+<div class="col-md-6">
+    <div class="form-group">
+        <label class="form-label">Password *</label>
+        <div class="input-group">
+            <input value="<%= (user && user.original_password) ? user.original_password : '' %>" type="text" class="form-control" name="password" id="password" required>
+            <div class="input-group-append">
+                <button type="button" class="btn btn-secondary" onclick="generatePassword()">Generate</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+                                <!-- <input type="hidden" name="roles[]" value="3"> -->
+
+                              
+
+                                <!-- <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="form-label">Address</label>
+                                        <textarea class="form-control" name="address"><%= (user && user.address) ? user.address : '' %></textarea>
+                                    </div>
+                                </div> -->
+
+                                <!-- <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="form-label">Map URL *</label>
+                                        <input type="text" class="form-control" name="map_url" value="<%= (user && user.map_url) ? user.map_url : '' %>" required>
+                                    </div>
+                                </div> -->
+
+                                   <!-- <div class="col-md-12">
+                                        <div class="form-group">
+                                            <label class="form-label">Description*</label>
+                                            <textarea class="form-control description ckeditor" name="description"
+                                                id="description"
+                                                placeholder="Description"><%= user?.description %></textarea>
+                                        </div>
+                                    </div> -->
+<div class="col-md-6">
+  <div class="form-group">
+    <label class="form-label">Profile Image</label>
+
+    <!-- Accept only image files -->
+    <input 
+      type="file" 
+      class="form-control" 
+      name="profile_image" 
+      accept="image/*" 
+      onchange="previewImage(event)">
+
+    <% if (user && user.profile_image) { %>
+      <img src="<%= publicUrl + user.profile_image %>" 
+           id="logoPreview" 
+           alt="Profile Image Preview" 
+           style="max-height: 100px; margin-top:10px;">
+    <% } else { %>
+      <img id="logoPreview" 
+           style="display:none; max-height:100px; margin-top:10px;">
+    <% } %>
+  </div>
+</div>
+
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="form-label">Status</label>
+                                        <select name="status" class="form-control custom-select">
+                                            <option value="1" <%= (user && user.status == 1) ? 'selected' : '' %>>Active</option>
+                                            <option value="0" <%= (user && user.status == 0) ? 'selected' : '' %>>Inactive</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-12">
+                                    <button type="submit" class="btn btn-primary float-right">
+                                        <%= action %>
+                                    </button>
+                                </div>
+
+                            </div>
+                        </form>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<%- include('../layouts/footer') %>
+<script>
+    function generatePassword() {
+        const length = 8;
+        const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$!";
+        let password = "";
+        for (let i = 0, n = charset.length; i < length; ++i) {
+            password += charset.charAt(Math.floor(Math.random() * n));
+        }
+        document.getElementById("password").value = password;
+    }
+
+    // Optional: preview uploaded image
+    // function previewImage(event) {
+    //     const output = document.getElementById('logoPreview');
+    //     output.src = URL.createObjectURL(event.target.files[0]);
+    //     output.style.display = 'block';
+    // }
+</script>
+
+<script>
+  function previewImage(event) {
+    const reader = new FileReader();
+    reader.onload = function() {
+      const output = document.getElementById('logoPreview');
+      output.src = reader.result;
+      output.style.display = 'block';
+    }
+    reader.readAsDataURL(event.target.files[0]);
+  }
+</script>

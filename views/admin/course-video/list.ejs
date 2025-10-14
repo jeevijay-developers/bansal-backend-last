@@ -1,0 +1,231 @@
+<%- include('../layouts/header') %>
+
+<section class="content-body">
+  <div class="container-fluid">
+    <div class="page-header">
+      <%- include('../partials/course_tabs', { course: course }) %>
+    </div>
+    
+    <div class="row">
+      <div class="col-12">
+        <div class="card">
+          <div class="card-header d-flex align-items-center justify-content-between">
+            <h4 class="card-title mb-0"><%= page_name %></h4>
+            
+            <div class="d-flex align-items-center gap-2">
+              <!-- Limit selector -->
+              <form method="GET" class="d-inline">
+                <input type="hidden" name="status" value="<%= req.query.status || '' %>">
+                <input type="hidden" name="page" value="<%= currentPage %>">
+                <select name="limit" onchange="this.form.submit()" class="form-select form-select-sm d-inline w-auto">
+                  <option value="100" <%= limit == 100 ? 'selected' : '' %>>100</option>
+                  <option value="250" <%= limit == 250 ? 'selected' : '' %>>250</option>
+                  <option value="500" <%= limit == 500 ? 'selected' : '' %>>500</option>
+                </select>
+              </form>
+
+              <% if (req.query.status === 'trashed') { %>
+                <a class="btn btn-primary" href="<%= list_url %>">
+                  <i class="fas fa-list"></i>
+                </a>
+              <% } else { %>
+                <a class="btn btn-danger btn-sm" href="<%= trashed_list_url %>">
+                  <i class="fas fa-trash"></i> 
+                </a>
+              <% } %>
+
+              <a class="btn btn-info btn-sm" href="<%= create_url %>">
+                <i class="fas fa-plus"></i> 
+              </a>
+
+              <button type="button" id="backButton" class="btn btn-primary btn-sm">
+                <i class="fa fa-arrow-left"></i> 
+              </button>
+            </div>
+          </div>
+
+          <div class="card-body">
+         <form id="filterForm" method="GET" action="<%= list_url %>" class="row g-3 align-items-end mb-3">
+  <div class="col-md-3">
+    <label>Subject</label>
+    <select name="subject_id" id="subject_id" class="form-select" data-selected="<%= filters.subject_id %>">
+      <option value="">All</option>
+      <% subjects.forEach(s => { %>
+        <option value="<%= s.id %>"><%= s.subject_name %></option>
+      <% }) %>
+    </select>
+  </div>
+
+  <div class="col-md-3">
+    <label>Chapter</label>
+    <select name="chapter_id" id="chapter_id" class="form-select" data-selected="<%= filters.chapter_id %>">
+      <option value="">All</option>
+      <% chaptersList.forEach(c => { %>
+        <option value="<%= c.id %>" data-subject="<%= c.subject_id %>"><%= c.chapter_name %> <%= c.subject_id %></option>
+      <% }) %>
+    </select>
+  </div>
+
+  <div class="col-2">
+    <button type="button" id="filterBtn" class="btn btn-primary">Apply Filter</button>
+    <button type="button" id="resetBtn" class="btn btn-secondary">Reset</button>
+  </div>
+</form>
+
+
+            <div class="table-responsive">
+              <table class="table display table-responsive-lg">
+                <thead>
+                  <tr>
+                    <th>Sr.No #</th>
+                    <th>Video Title</th>
+                    <th>Video Sub Title</th>
+                    <th>Subject</th>
+                    <th>Chapter</th>
+                     <th>Video URL</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% videos.forEach((post, index) => { %>
+                  <tr>
+                    <td><%= (currentPage - 1) * limit + index + 1 %></td>
+                    <td><%= post.video_title %></td>
+                     <td><%= post.video_sub_title %></td>
+                   
+                    <td><%= post.subject_name %></td>
+                    <td><%= post.chapter_name %></td>
+                      <td><%= post.video_url %></td>
+                    <td>
+                      <% if (post.status == 1) { %>
+                        <span class="badge badge-success">Active</span>
+                      <% } else { %>
+                        <span class="badge badge-danger">Inactive</span>
+                      <% } %>
+                    </td>
+                    <td>
+                      <% if (req.query.status === 'trashed') { %>
+                        <a href="/admin/course-video-restore/<%= post.id %>" class="btn btn-success shadow btn-xs sharp me-1" title="Restore">
+                          <i class="fa fa-undo"></i>
+                        </a>
+                        <a href="/admin/course-video-permanent-delete/<%= post.id %>" class="btn btn-danger shadow btn-xs sharp"
+                          onclick="return confirm('Are you sure you want to permanently delete this chapter? This action cannot be undone.');"
+                          title="Delete Permanently">
+                          <i class="fa fa-trash"></i>
+                        </a>
+                      <% } else { %>
+                        <a href="/admin/course-video-edit/<%= post.id %>" class="btn btn-primary shadow btn-xs sharp me-1" title="Edit">
+                          <i class="fas fa-pencil-alt"></i>
+                        </a>
+                        <a href="/admin/course-video-delete/<%= post.id %>" class="btn btn-warning shadow btn-xs sharp" title="Soft Delete">
+                          <i class="fa fa-trash"></i>
+                        </a>
+                      <% } %>
+                    </td>
+                  </tr>
+                  <% }) %>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Pagination -->
+            <% if (totalPages > 1) { %>
+              <nav class="mt-3">
+                <ul class="pagination justify-content-center">
+                  <% for (let i = 1; i <= totalPages; i++) { %>
+                    <li class="page-item <%= i === currentPage ? 'active' : '' %>">
+                      <a class="page-link" href="?page=<%= i %>&limit=<%= limit %><%= req.query.status ? '&status=' + req.query.status : '' %>">
+                        <%= i %>
+                      </a>
+                    </li>
+                  <% } %>
+                </ul>
+              </nav>
+            <% } %>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  $('#backButton').click(function () {
+    window.history.back();
+  });
+</script>
+
+<%- include('../layouts/footer') %>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+  document.getElementById('filterBtn').addEventListener('click', function () {
+    const subjectId = document.getElementById('subject_id').value;
+    const chapterId = document.getElementById('chapter_id').value;
+    const currentParams = new URLSearchParams(window.location.search);
+
+    currentParams.set('subject_id', subjectId);
+    currentParams.set('chapter_id', chapterId);
+    currentParams.set('page', 1); // reset page to 1 on new filter
+
+    window.location.href = `<%= list_url %>?${currentParams.toString()}`;
+  });
+
+   document.getElementById('resetBtn').addEventListener('click', function () {
+    window.location.href = `<%= list_url %>`;
+  });
+</script>
+
+
+<script>
+  $(document).ready(function () {
+    const selectedSubjectId = $('#subject_id').data('selected');
+    const selectedChapterId = $('#chapter_id').data('selected');
+
+    // Auto-select subject on load
+    if (selectedSubjectId) {
+      $('#subject_id').val(selectedSubjectId);
+    }
+
+    function filterChaptersBySubject(subjectId) {
+      $('#chapter_id option').each(function () {
+        const subject = $(this).data('subject');
+        const value = $(this).val();
+
+        // Always show default "All" option
+        if (!value) {
+          $(this).show();
+        } else if (subject == subjectId) {
+          $(this).show();
+        } else {
+          $(this).hide();
+        }
+      });
+
+      // Reset or preserve selected chapter
+      if (selectedChapterId && $(`#chapter_id option[value="${selectedChapterId}"]`).is(':visible')) {
+        $('#chapter_id').val(selectedChapterId);
+      } else {
+        $('#chapter_id').val('');
+      }
+    }
+
+    // Initial filter on page load
+    if (selectedSubjectId) {
+      filterChaptersBySubject(selectedSubjectId);
+    }
+
+    // Change subject event
+    $('#subject_id').on('change', function () {
+      const subjectId = $(this).val();
+      filterChaptersBySubject(subjectId);
+      $('#filterForm').submit(); // auto-submit
+    });
+
+    // Change chapter event
+    $('#chapter_id').on('change', function () {
+      $('#filterForm').submit(); // auto-submit
+    });
+  });
+</script>

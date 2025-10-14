@@ -1,0 +1,292 @@
+<%- include('../layouts/header') %>
+
+  <div class="content-body">
+    <div class="container-fluid">
+      <div class="page-header">
+ 
+     <%- include('../partials/course_tabs', { course: course }) %>
+</div>
+
+        <div class="row">
+          <div class="col-12">
+            <div class="card">
+              <div class="card-header d-flex justify-content-between align-items-center">
+                <h4 class="card-title mb-0">
+                  <%= page_name %>
+                </h4>
+                <a href="/admin/course-list/all" class="btn btn-primary btn-sm">
+                  <i class="fa fa-arrow-left"></i> Back
+                </a>
+              </div>
+              <div class="card-body">
+                <div class="row">
+                  <!-- Course Name -->
+                  <div class="col-md-6">
+                    <div class="form-group border rounded p-3 mb-3">
+                      <label><strong>Course Name</strong></label>
+                      <p class="mb-0 text-muted">
+                        <%= course.course_name %>
+                      </p>
+                    </div>
+                  </div>
+
+                   <div class="col-md-6">
+                    <div class="form-group border rounded p-3 mb-3">
+                      <label><strong>Course Slug</strong></label>
+                      <p class="mb-0 text-muted">
+                        <%= course.slug %>
+                      </p>
+                    </div>
+                  </div>
+
+                  <!-- Title Heading -->
+                  <div class="col-md-3">
+                    <div class="form-group border rounded p-3 mb-3">
+                      <label><strong>Title Heading</strong></label>
+                      <p class="mb-0 text-muted">
+                        <%= course.title_heading %>
+                      </p>
+                    </div>
+                  </div>
+
+                  <!-- Slug -->
+                  <div class="col-md-3">
+                    <div class="form-group border rounded p-3 mb-3">
+                      <label><strong>Slug</strong></label>
+                      <p class="mb-0 text-muted">
+                        <%= course.slug %>
+                      </p>
+                    </div>
+                  </div>
+
+                  <!-- Category -->
+                  <div class="col-md-3">
+                    <div class="form-group border rounded p-3 mb-3">
+                      <label><strong>Category</strong></label>
+                      <p class="mb-0 text-muted">
+                        <%= course.category_name %>
+                      </p>
+                    </div>
+                  </div>
+
+                  <!-- Price -->
+                  <div class="col-md-3">
+                    <div class="form-group border rounded p-3 mb-3">
+                      <label><strong>Price</strong></label>
+                      <p class="mb-0 text-muted">₹<%= course.price %>
+                      </p>
+                    </div>
+                  </div>
+
+                  <!-- Discount -->
+                  <div class="col-md-3">
+                    <div class="form-group border rounded p-3 mb-3">
+                      <label><strong>Discount</strong></label>
+                      <p class="mb-0 text-muted">
+                        <%= course.discount %> %
+                      </p>
+                    </div>
+                  </div>
+
+                  <!-- Offer Price -->
+                  <div class="col-md-3">
+                    <div class="form-group border rounded p-3 mb-3">
+                      <label><strong>Offer Price</strong></label>
+                      <p class="mb-0 text-muted">₹<%= course.offer_price %>
+                      </p>
+                    </div>
+                  </div>
+
+                  <!-- Start Time -->
+                  <div class="col-md-3">
+                    <div class="form-group border rounded p-3 mb-3">
+                      <label><strong>Start Time</strong></label>
+                  
+                       <p class="mb-0 text-muted">
+  <%= course.start_time
+        ? new Date(course.start_time).toLocaleString('en-GB', { 
+            day: '2-digit', 
+            month: '2-digit', 
+            year: 'numeric', 
+            hour: '2-digit', 
+            minute: '2-digit', 
+            hour12: true 
+          }) 
+        : '-' %>
+</p>
+                    </div>
+                  </div>
+
+                  <!-- Mode of Class -->
+                  <div class="col-md-3">
+                    <div class="form-group border rounded p-3 mb-3">
+                      <label><strong>Mode of Class</strong></label>
+                      <p class="mb-0 text-muted">
+                        <%= course.mode_of_class %>
+                      </p>
+                    </div>
+                  </div>
+
+                  <div class="col-md-3">
+                    <div class="form-group border rounded p-3 mb-3">
+                      <label><strong>Course Type</strong></label>
+                      <p class="mb-0 text-muted">
+                        <%= course.course_type %>
+                      </p>
+                    </div>
+                  </div>
+
+                  <!-- Batch Type -->
+                  <div class="col-md-3">
+                    <div class="form-group border rounded p-3 mb-3">
+                      <label><strong>Batch Type</strong></label>
+                      <p class="mb-0 text-muted">
+                        <%= course.batch_type %>
+                      </p>
+                    </div>
+                  </div>
+
+                  <!-- Batch Year -->
+                  <div class="col-md-3">
+                    <div class="form-group border rounded p-3 mb-3">
+                      <label><strong>Batch Year</strong></label>
+                      <p class="mb-0 text-muted">
+                        <%= course.batch_year %>
+                      </p>
+                    </div>
+                  </div>
+
+                  <!-- Status -->
+                  <div class="col-md-3">
+                    <div class="form-group border rounded p-3 mb-3">
+                      <label><strong>Status</strong></label>
+                      <p class="mb-0 text-muted">
+                        <%= course.status==1 ? 'Active' : 'Inactive' %>
+                      </p>
+                    </div>
+                  </div>
+                  <div class="row">
+
+                    <!-- Teachers -->
+                    <div class="col-md-6">
+                      <div class="form-group border rounded p-3 mb-3">
+                        <label><strong>Teachers</strong></label>
+                        <p class="mb-0 text-muted">
+                          <% if (teachers && teachers.length) { %>
+                            <% teachers.forEach((teacher, index)=> { %>
+                              <span class="badge bg-primary text-white">
+                                <%= teacher.name %>
+                              </span>
+                              <%= index < teachers.length - 1 ? ' ' : '' %>
+                                <% }) %>
+                                  <% } else { %>
+                                    <span class="badge bg-secondary">Not Assigned</span>
+                                    <% } %>
+                        </p>
+                      </div>
+                    </div>
+
+                    <!-- Services -->
+                    <div class="col-md-6">
+                      <div class="form-group border rounded p-3 mb-3">
+                        <label><strong>Services</strong></label>
+                        <p class="mb-0 text-muted">
+                          <% if (services && services.length) { %>
+                            <% services.forEach((service, index)=> { %>
+                              <span class="badge bg-success text-white">
+                                <%= service.title %>
+                              </span>
+                              <%= index < services.length - 1 ? ' ' : '' %>
+                                <% }) %>
+                                  <% } else { %>
+                                    <span class="badge bg-secondary">Not Assigned</span>
+                                    <% } %>
+                        </p>
+                      </div>
+                    </div>
+
+
+
+
+
+                    <!-- Media Section -->
+                    <div class="col-12">
+                      <h5 class="border-bottom pb-2 mt-4">Media</h5>
+                    </div>
+
+                    <!-- Thumbnail Image -->
+                  <div class="col-md-3">
+  <div class="form-group border rounded p-3 mb-3">
+    <label><strong>Thumbnail Image</strong></label><br />
+    <% if (course.image) { %>
+      <img 
+  src="<%= publicUrl + course.image %>" 
+  alt="<%= course.slug %>" 
+  class="img-fluid rounded-3" 
+  style="width: 150px; aspect-ratio: 1 / 0.7; object-fit: cover;"
+/>
+    <% } else { %>
+      <p>No image uploaded</p>
+    <% } %>
+  </div>
+</div>
+
+<div class="col-md-3">
+  <div class="form-group border rounded p-3 mb-3">
+    <label><strong>Details Image</strong></label><br />
+    <% if (course.details_image) { %>
+      <img src="<%= publicUrl + course.details_image %>" style="width: 150px; aspect-ratio: 1 / 0.7; object-fit: cover;"/>
+    <% } else { %>
+      <p>No details image uploaded</p>
+    <% } %>
+  </div>
+</div>
+
+<div class="col-md-3">
+  <div class="form-group border rounded p-3 mb-3">
+    <label><strong>Brochure</strong></label><br />
+    <% if (course.brochure) { %>
+      <a href="<%= publicUrl + course.brochure %>" target="_blank">Download Brochure</a>
+    <% } else { %>
+      <p>No brochure uploaded</p>
+    <% } %>
+  </div>
+</div>
+
+                    <!-- Video -->
+                    <div class="col-md-3">
+                      <div class="form-group border rounded p-3 mb-3">
+                        <label><strong>Video</strong></label><br />
+                        <% if (course.video) { %>
+                          <a href="<%= course.video %>" target="_blank">Watch Video</a>
+                          <% } else { %>
+                            <p>No video uploaded</p>
+                            <% } %>
+                      </div>
+                    </div>
+
+                    <!-- Brochure -->
+                   
+
+                    <!-- Meeting Link -->
+                    <div class="col-md-3">
+                      <div class="form-group border rounded p-3 mb-3">
+                        <label><strong>Meeting Link</strong></label><br />
+                        <% if (course.meeting_link) { %>
+                          <a href="<%= course.meeting_link %>" target="_blank">Join Meeting</a>
+                          <% } else { %>
+                            <p>No meeting link available</p>
+                            <% } %>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        </div>
+  </div>
+  </div>
+
+        <%- include('../layouts/footer') %>

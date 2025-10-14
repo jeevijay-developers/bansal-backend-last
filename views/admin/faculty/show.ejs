@@ -1,0 +1,131 @@
+<%- include('../layouts/header') %>
+
+<div class="content-body">
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-12">
+        <div class="card">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <h4 class="card-title mb-0"><%= page_name %></h4>
+            <a href="<%= back_url %>" class="btn btn-primary btn-sm">
+              <i class="fa fa-arrow-left"></i> Back
+            </a>
+          </div>
+          <div class="card-body">
+            <div class="row">
+
+              <!-- Name -->
+              <div class="col-md-3">
+                <div class="form-group border rounded p-3 mb-3">
+                  <label><strong>Name</strong></label>
+                  <p class="mb-0 text-muted"><%= faculty.name || 'N/A' %></p>
+                </div>
+              </div>
+
+              <!-- Email -->
+              <div class="col-md-3">
+                <div class="form-group border rounded p-3 mb-3">
+                  <label><strong>Email</strong></label>
+                  <p class="mb-0 text-muted"><%= faculty.email || 'N/A' %></p>
+                </div>
+              </div>
+
+              <!-- Phone -->
+              <div class="col-md-3">
+                <div class="form-group border rounded p-3 mb-3">
+                  <label><strong>Phone</strong></label>
+                  <p class="mb-0 text-muted"><%= faculty.phone || 'N/A' %></p>
+                </div>
+              </div>
+
+              <!-- Category -->
+              <div class="col-md-3">
+                <div class="form-group border rounded p-3 mb-3">
+                  <label><strong>Category</strong></label>
+                  <p class="mb-0 text-muted"><%= faculty.category_name || 'N/A' %></p>
+                </div>
+              </div>
+
+              <!-- Experience -->
+              <div class="col-md-3">
+                <div class="form-group border rounded p-3 mb-3">
+                  <label><strong>Experience</strong></label>
+                  <p class="mb-0 text-muted"><%= faculty.experience || 'N/A' %></p>
+                </div>
+              </div>
+
+              <!-- Teaching Mode -->
+              <div class="col-md-3">
+                <div class="form-group border rounded p-3 mb-3">
+                  <label><strong>Teaching Mode</strong></label>
+                  <p class="mb-0 text-muted"><%= faculty.teaching_mode || 'N/A' %></p>
+                </div>
+              </div>
+
+              <!-- Status -->
+              <div class="col-md-3">
+                <div class="form-group border rounded p-3 mb-3">
+                  <label><strong>Status</strong></label>
+                  <p class="mb-0 text-muted"><%= faculty.status == 1 ? 'Active' : 'Inactive' %></p>
+                </div>
+              </div>
+
+              <!-- Created At -->
+              <div class="col-md-3">
+                <div class="form-group border rounded p-3 mb-3">
+                  <label><strong>Created At</strong></label>
+                  <!-- <p class="mb-0 text-muted"><%= faculty.created_at || 'N/A' %></p> -->
+                   <p class="mb-0 text-muted">
+  <%= faculty.created_at
+        ? new Date(faculty.created_at).toLocaleString('en-GB', { 
+            day: '2-digit', 
+            month: '2-digit', 
+            year: 'numeric', 
+            hour: '2-digit', 
+            minute: '2-digit', 
+            hour12: true 
+          }) 
+        : '-' %>
+</p>
+                </div>
+              </div>
+
+              <!-- Short Description -->
+              <div class="col-md-12">
+                <div class="form-group border rounded p-3 mb-3">
+                  <label><strong>Short Description</strong></label>
+                  <p class="mb-0 text-muted"><%- faculty.short_description || 'N/A' %></p>
+                </div>
+              </div>
+
+              <!-- Full Description -->
+              <div class="col-md-12">
+                <div class="form-group border rounded p-3 mb-3">
+                  <label><strong>Full Description</strong></label>
+                  <p class="mb-0 text-muted"><%- faculty.description || 'N/A' %></p>
+                </div>
+              </div>
+
+              <!-- Image -->
+              <div class="col-md-3">
+                <div class="form-group border rounded p-3 mb-3">
+                  <label><strong>Image</strong></label><br>
+                  <% if (faculty.image) { %>
+                    <a href="<%= publicUrl + faculty.image %>" target="_blank">
+                      <img src="<%= publicUrl + faculty.image %>" alt="Faculty Image" class="img-fluid rounded" style="max-width:100px;" />
+                    </a>
+                  <% } else { %>
+                    <p class="mb-0 text-muted">No Image</p>
+                  <% } %>
+                </div>
+              </div>
+
+            </div> <!-- end row -->
+          </div> <!-- end card-body -->
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%- include('../layouts/footer') %>

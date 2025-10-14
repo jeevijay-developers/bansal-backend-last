@@ -1,0 +1,88 @@
+<%- include('layouts/header') %>
+
+<div class="content-body">
+  <div class="container-fluid">
+
+    <div class="row mb-3">
+        <div class="col-12">
+            <h4 class="mb-4">Dashboard Overview</h4>
+        </div>
+    </div>
+
+    <div class="row g-3">
+
+        <% if (userRoles.includes("Center")) { %>
+          <!-- Courses Card for Center -->
+          <div class="col-xl-3 col-lg-6 col-sm-6">
+              <div class="card bg-primary text-white">
+                  <div class="card-body d-flex align-items-center">
+                      <span class="me-3 fs-2"><i class="fas fa-book"></i></span>
+                      <div class="text-end w-100">
+                          <p class="mb-1">Courses</p>
+                          <h4 class="mb-0"><%= active_courses %></h4>
+                      </div>
+                  </div>
+              </div>
+          </div>
+
+          <!-- Students Card for Center -->
+          <div class="col-xl-3 col-lg-6 col-sm-6">
+              <div class="card bg-dark text-white">
+                  <div class="card-body d-flex align-items-center">
+                      <span class="me-3 fs-2"><i class="fas fa-user-graduate"></i></span>
+                      <div class="text-end w-100">
+                          <p class="mb-1">Students</p>
+                          <h4 class="mb-0"><%= active_students %></h4>
+                      </div>
+                  </div>
+              </div>
+          </div>
+        <% } else { %>
+          <!-- Courses Card for other roles -->
+          <div class="col-xl-3 col-lg-6 col-sm-6">
+              <div class="card bg-primary text-white">
+                  <div class="card-body d-flex align-items-center">
+                      <span class="me-3 fs-2"><i class="fas fa-book"></i></span>
+                      <div class="text-end w-100">
+                          <p class="mb-1">Courses</p>
+                          <h4 class="mb-0"><%= active_courses %></h4>
+                      </div>
+                  </div>
+              </div>
+          </div>
+
+          <!-- Students Card for other roles -->
+          <div class="col-xl-3 col-lg-6 col-sm-6">
+              <div class="card bg-dark text-white">
+                  <div class="card-body d-flex align-items-center">
+                      <span class="me-3 fs-2"><i class="fas fa-user-graduate"></i></span>
+                      <div class="text-end w-100">
+                          <p class="mb-1">Students</p>
+                          <h4 class="mb-0"><%= active_students %></h4>
+                      </div>
+                  </div>
+              </div>
+          </div>
+          <div class="col-xl-3 col-lg-6 col-sm-6">
+            <div class="card bg-info text-white">
+                <div class="card-body d-flex align-items-center">
+                    <span class="me-3 fs-2"><i class="fas fa-book-open"></i></span>
+                    <div class="text-end w-100">
+                        <p class="mb-1">Books</p>
+                        <h4 class="mb-0"><%= active_books %></h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <% } %>
+
+        <!-- Other dashboard cards (Books, Coupons, Centers, etc.) -->
+        
+
+        <!-- Add the remaining cards here as usual -->
+
+    </div>
+  </div>
+</div>
+
+<%- include('layouts/footer') %>

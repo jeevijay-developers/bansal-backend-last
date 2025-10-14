@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Invoice</title>
+<style>
+  body { font-family: Arial, sans-serif; margin: 20px; color: #333; }
+  .header { text-align: center; margin-bottom: 20px; }
+  .header img { max-width: 150px; }
+  .invoice-details, .customer-details, table { width: 100%; margin-bottom: 20px; }
+  table { border-collapse: collapse; }
+  table, th, td { border: 1px solid #ddd; }
+  th, td { padding: 10px; text-align: left; }
+  th { background: #f4f4f4; }
+  .total { text-align: right; font-weight: bold; }
+  .footer { text-align: center; margin-top: 30px; font-size: 12px; color: #777; }
+</style>
+</head>
+<body>
+<div class="header">
+  <img src="https://project.bansalcalssadmin.aamoditsolutions.com/assets/img/logo.png" alt="Brand Logo">
+  <h2>Bansal Classes</h2>
+</div>
+
+<div class="invoice-details">
+  <p><strong>Invoice No:</strong> <%= order.order_id %></p>
+  <p><strong>Date:</strong> <%= new Date(order.created_at).toLocaleDateString("en-IN") %></p>
+</div>
+
+<div class="customer-details">
+  <p><strong>Customer:</strong> <%= order.customer_name %></p>
+  <p><strong>Email:</strong> <%= order.email %></p>
+</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Course</th>
+      <th>Price (₹)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><%= order.course_name %></td>
+      <td><%= order.total_amount %></td>
+    </tr>
+  </tbody>
+  <tfoot>
+    <tr>
+      <td class="total">Total</td>
+      <td class="total">₹ <%= order.total_amount %></td>
+    </tr>
+  </tfoot>
+</table>
+
+<div class="footer">
+  Thank you for your purchase!<br>
+  Contact support@bansalclasses.com for help
+</div>
+</body>
+</html>

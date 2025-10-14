@@ -1,0 +1,99 @@
+const express = require("express");
+const multer = require("multer");
+const { setupStorage } = require("../storage");
+const router = express.Router();
+const ModuleSettingController = require("../controllers/Admin/ModuleSettingController");
+const adminauthenticateCustomer = require("../middlewares/adminauthenticateCustomer");
+const categoryRoute = require("../routes/categoryRoutes");
+const courseRoutes = require("../routes/courseRoutes");
+const careerRoutes = require("../routes/careerRoutes")
+const booksRoutes = require("../routes/booksRoutes");
+const serviceRoutes = require("../routes/serviceRoutes");
+const couponRoutes = require("../routes/couponRoutes");
+const customerRoutes = require("../routes/customerRoutes");
+const adminLoginRoutes = require("../routes/adminLoginRoutes");
+const facultyRoutes = require("../routes/facultyRoutes");
+const bannerRoutes = require("../routes/bannerRoutes");
+const rolePermissionRoutes = require("../routes/roleRoutes");
+const testSeriesRoute = require("../routes/testSeriesRoutes");
+const filterRoutes = require("../routes/filterRoute");
+const cmsRoute = require("../routes/cmsRoute");
+const moduleSettingRoutes = require("../routes/moduleSettingRoutes");
+const faqRoutes = require("../routes/faqRoutes");
+const courseClassRoutes = require("../routes/CourseClassRoutes");
+const serviceCityRoutes = require("../routes/serviceCityRoutes");
+const examRoute = require("../routes/examRoutes");
+const courseExamRoute = require("../routes/courseExamRoutes");
+const blogRoute = require("../routes/blogRoutes");
+const courseSubjectRoutes = require("../routes/courseSubjectRoutes");
+const courseChapterRoutes = require("../routes/courseChapterRoutes");
+const coursePDFRoutes = require("./coursePdfRoutes");
+const courseVideoRoutes = require("./courseVideoRoutes");
+const courseTopicRoute = require("../routes/courseTopicRoutes");
+const centerRoutes = require("../routes/centerRoutes");
+const bookingRoutes = require("../routes/bookingRoutes");
+const galleryRoutes = require("../routes/GalleryRoutes");
+const liveTestRoutes = require("../routes/liveTestRoutes");
+const liveClassRoutes = require("../routes/liveClassRoutes");
+const examInstructionRoutes = require("../routes/examInstructionRoutes");
+const achievementRoutes = require("../routes/achievementRoutes");
+const userRoutes = require("../routes/UserRoutes");
+router.use(adminLoginRoutes);
+router.use(customerRoutes);
+router.use(customerRoutes);
+router.use(categoryRoute);
+router.use(courseRoutes);
+router.use(booksRoutes);
+router.use(serviceRoutes);
+router.use(couponRoutes);
+router.use(couponRoutes);
+router.use(facultyRoutes);
+router.use(bannerRoutes);
+router.use(rolePermissionRoutes);
+router.use(testSeriesRoute);
+router.use(examRoute);
+router.use(cmsRoute);
+router.use(filterRoutes);
+router.use(faqRoutes);
+router.use(careerRoutes);
+router.use(blogRoute);
+router.use(courseSubjectRoutes);
+router.use(courseChapterRoutes);
+router.use(coursePDFRoutes);
+router.use(courseTopicRoute);
+router.use(centerRoutes);
+router.use(liveTestRoutes);
+router.use(userRoutes);
+router.use(courseVideoRoutes);
+router.use(bookingRoutes);
+router.use(serviceCityRoutes);
+router.use(galleryRoutes);
+router.use(courseExamRoute);
+router.use(courseClassRoutes);
+router.use(liveClassRoutes);
+router.use(examInstructionRoutes);
+router.use(achievementRoutes);
+
+const web_logoUploadPath = "uploads/logo/";
+const web_logoStorage = setupStorage(web_logoUploadPath);
+const web_logoUpload = multer({ storage: web_logoStorage });
+
+const web_faviconUploadPath = "uploads/favicon/";
+const web_faviconStorage = setupStorage(web_faviconUploadPath);
+const web_faviconUpload = multer({ storage: web_faviconStorage });
+
+const upload = multer();
+router.post(
+  "/admin/setting/update",
+  adminauthenticateCustomer,
+  // web_logoUpload.array("web_logo"),
+  // web_faviconUpload.array("web_favicon"),
+  upload.none(),           
+  ModuleSettingController.Update
+);
+router.get(
+  "/admin/setting/:url?",
+  adminauthenticateCustomer,
+  ModuleSettingController.Edit
+);
+module.exports = router;

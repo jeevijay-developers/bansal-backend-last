@@ -1,0 +1,152 @@
+<%- include('../layouts/header') %>
+
+<section class="content-body">
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-12">
+        <div class="card">
+          <div class="card-header d-flex align-items-center justify-content-between">
+            <h4 class="card-title mb-0"><%= title %></h4>
+            <div class="row">
+              <div class="col-12 text-end">
+
+                <button type="button" id="backButton" class="btn btn-primary btn-sm">
+                  <i class="fa fa-arrow-left"></i>
+                </button>
+              
+              </div>
+            
+            </div>
+          
+          </div>
+
+          <div class="card-body">
+           <div class="row align-items-end g-2 mb-3 filter-tab">
+  <div class="col-md-2">
+    <label>From</label>
+    <input type="date" id="from_date" class="form-control" value="<%= req.query.from_date || '' %>">
+  </div>
+  <div class="col-md-2">
+    <label>To</label>
+    <input type="date" id="to_date" class="form-control" value="<%= req.query.to_date || '' %>">
+  </div>
+ 
+  <div class="col-md-3">
+  <label>Program</label>
+  <select id="position" name="position" class="position form-select">
+  <option value="">-- Apply For --</option>
+  <option value="Senior Faculty">Senior Faculty</option>
+  <option value="neet-vi-to-x-faculty">NEET VI to X Faculty</option>
+  <option value="non-academic">Non-Academic</option>
+
+   <!-- <option value="Marketing & Business Development">Marketing & Business Development</option>
+    <option value="Counsler/Telecaller">Counsler/Telecaller</option>
+    <option value="IT/Web Developer">IT/Web Developer</option>
+    <option value="Computer Operators">Computer Operators</option>
+    <option value="Centre Support Executives">Centre Support Executives</option>
+    <option value="Social Media Manager">Social Media Manager</option>
+    <option value="Content Writer">Content Writer</option>
+    <option value="Other">Other</option> -->
+
+
+   </select>
+                          
+                       
+</div>
+
+  </br>
+
+  <div class="col-md-2  text-center">
+    <button id="filterBtn" class="btn btn-primary me-2">Filter</button>
+    <a href="/admin/career-request-list" class="btn btn-secondary">Reset</a>
+  </div>
+</div>
+            <div class="table-responsive">
+              <table id="example3" class="display table-responsive-lg">
+                <thead>
+    <tr>
+      <th>ID</th>
+      <th>Name</th>
+      <th>Email</th>
+      <td>Position</td>
+      <th>Mobile</th>
+      <th>Apply For</th>
+      <th>State</th>
+      <th>City</th>
+      <th>Date</th>
+      <th>Action</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% if (request_data && request_data.length > 0) { %>
+      <% request_data.forEach((r, index) => { %>
+      <tr>
+        <!-- Sr No -->
+        <td><%= index + 1 %></td> 
+          <td><%= r.name %></td>
+          <td><%= r.email %></td>
+          <td><%= r.position %></td>
+          <td><%= r.mobile %></td>
+          <td><%= r.applying_for %></td>
+          <td><%= r.state %></td>
+          <td><%= r.city %></td>
+          <td><%= new Date(r.created_at).toLocaleString() %>
+          <%= r.created_at
+        ? new Date(r.created_at).toLocaleString('en-GB', { 
+            day: '2-digit', 
+            month: '2-digit', 
+            year: 'numeric', 
+            hour: '2-digit', 
+            minute: '2-digit', 
+            hour12: true 
+          }) 
+        : '-' %>
+          
+          </td>
+          <td>
+             <a
+                        href="/admin/career-request-details/<%= r.id %>"
+                        class="btn btn-primary shadow btn-xs sharp me-1"
+                        ><i class="fas fa-eye"></i
+                      ></a>
+          </td>
+        </tr>
+      <% }) %>
+    <% } else { %>
+      <tr>
+        <td colspan="8" style="text-align: center;">No records found.</td>
+      </tr>
+    <% } %>
+  </tbody>
+</table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<%- include('../layouts/footer') %>
+
+<script>
+  document.getElementById("filterBtn").addEventListener("click", () => {
+    const params = new URLSearchParams();
+
+    const from_date = document.getElementById("from_date").value;
+    const to_date = document.getElementById("to_date").value;
+    const position = document.getElementById("position").value;
+
+    if (from_date) params.append("from_date", from_date);
+    if (to_date) params.append("to_date", to_date);
+    if (position) params.append("position", position);
+
+    window.location.href = "/admin/career-request-list?" + params.toString();
+  });
+
+  // Inline back button
+  document.getElementById("backButton").addEventListener("click", () => {
+    window.history.back();
+  });
+</script>
+

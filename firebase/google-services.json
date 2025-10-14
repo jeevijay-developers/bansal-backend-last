@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "456788515389",
+    "project_id": "bansal-classes-2f088",
+    "storage_bucket": "bansal-classes-2f088.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:456788515389:android:2e89e34470971ec40a6854",
+        "android_client_info": {
+          "package_name": "com.bansal_classes"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDQ6TbtEOwNupVBLBGj69WvQOBTNIT3Rms"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

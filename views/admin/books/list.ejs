@@ -1,0 +1,282 @@
+<%- include('../layouts/header') %>
+
+<div class="content-body">
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-12">
+        <div class="card">
+          <div
+            class="card-header d-flex align-items-center justify-content-between"
+          >
+            <h3 class="card-title-2">
+              <% let activeType = record_type; %>
+              <a
+                href="/admin/<%= route %>-list/all"
+                class="btn <%= (!activeType || activeType === 'all') ? 'btn-primary' : 'btn-default' %> mr-2"
+              >
+                All <%= module_name %>
+              </a>
+              <a
+                href="/admin/<%= route %>-list/active"
+                class="btn <%= activeType === 'active' ? 'btn-primary' : 'btn-default' %> mr-2"
+              >
+                Active <%= module_name %>
+              </a>
+              <a
+                href="/admin/<%= route %>-list/inactive"
+                class="btn <%= activeType === 'inactive' ? 'btn-primary' : 'btn-default' %> mr-2"
+              >
+                Inactive <%= module_name %>
+              </a>
+              <a
+                href="/admin/<%= route %>-list/trashed"
+                class="btn <%= activeType === 'trashed' ? 'btn-primary' : 'btn-default' %> mr-2"
+              >
+                Deleted <%= module_name %>
+              </a>
+              <!-- <a href="/admin/<%= route %>-list/paid" class="btn <%= activeType === 'paid' ? 'btn-primary' : 'btn-default' %> mr-2">
+                Paid <%= module_name %>
+              </a> -->
+            </h3>
+
+            <div class="row">
+              <div class="col-12 text-end">
+                <!-- <% if (req.query.status === 'trashed') { %>
+                <a class="btn btn-primary" href="<%= list_url %>">
+                  <i class="fas fa-list"></i>
+                </a>
+                <% } else { %>
+                <a class="btn btn-danger btn-sm" href="<%= trashed_list_url %>">
+                  <i class="fas fa-trash"></i>
+                </a>
+                <% } %> -->
+
+                <a class="btn btn-info btn-sm" href="<%= create_url %>">
+                  <i class="fas fa-plus"></i>
+                </a>
+
+                <button
+                  type="button"
+                  id="backButton"
+                  class="btn btn-primary btn-sm"
+                >
+                  <i class="fa fa-arrow-left"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="card-body">
+            <div class="row">
+              <% if (!customers || customers.length === 0) { %>
+              <div class="col-12 text-center text-muted py-5">
+                No <%= module_name %> found.
+              </div>
+              <% } else { %> 
+                 <!-- <div class="d-flex align-items-center mb-3">
+    <input type="checkbox" id="selectAll" class="me-2"> Select All
+
+    <% if (activeType === 'trashed') { %>
+      <button id="bulkRestoreBtn" class="btn btn-success btn-sm ms-2" disabled>For Bulk Restore</button>
+    <% } else { %>
+      <button id="bulkDeleteBtn" class="btn btn-danger btn-sm ms-2" disabled>For Bulk Delete</button>
+    <% } %>
+  </div> -->
+  <div class="d-flex align-items-center mb-2 justify-content-between">
+                  <div class="d-flex align-items-center mb-3">
+    <input type="checkbox" id="selectAll" class="me-2"> Select All
+
+    <% if (activeType === 'trashed') { %>
+      <button id="bulkRestoreBtn" class="btn btn-success btn-sm ms-2" disabled>For Bulk Restore</button>
+    <% } else { %>
+      <button id="bulkDeleteBtn" class="btn btn-danger btn-sm ms-2" disabled>For Bulk Delete</button>
+    <% } %>
+  </div>
+
+   
+
+  
+    <% if (permissions.includes('Book Export')) { %>
+<a href="#" id="exportBtn" class="btn btn-success btn-sm">
+    <i class="fas fa-file-export"></i> Export Books
+  </a>
+ <% } %>
+
+            </div>
+  
+  <hr>
+                
+                <% customers.forEach((course, index) => { %>
+              <div class="col-md-4">
+                <div
+                  class="border card mb-4 shadow-sm border rounded-4 overflow-hidden"
+                >
+                  <div class="card-body p-4">
+                    <div class="d-flex justify-content-between flex-wrap mb-16">
+                      <div>
+                        <p class="mb-1 text-muted">
+                           <input type="checkbox" class="bulk-checkbox me-2" value="<%= course.id %>">
+                          Category: <strong><%= course.category_name %></strong>
+                        </p>
+                      </div>
+                      <div class="text-end">
+                        <% if (course.status == 1) { %>
+                        <span class="badge bg-success">Active</span>
+                        <% } else { %>
+                        <span class="badge bg-danger">Inactive</span>
+                        <% } %>
+                      </div>
+                    </div>
+                    
+                    <h5 class="fw-bold text-primary mb-3 d-block w-100">
+                      <a
+                        href="/admin/<%= route %>-show/<%= course.id %>"
+                        class="text-decoration-none text-dark"
+                      >
+                        <%= course.book_name || course.course_name %>
+                      </a>
+                    </h5>
+                    <div class="row align-items-center">
+                      <div class="col-md-4">
+                        <img
+                          src="<%= publicUrl + course.image %>"
+                          alt="<%= course.slug %>"
+                          class="img-fluid rounded-3 w-100"
+                          style="aspect-ratio: 1 / 1; object-fit: cover"
+                        />
+                      </div>
+                      <div class="col-md-8 mt-3 mt-md-0">
+                        <h6 class="text-success">
+                          ₹ <%= course.offer_price %>
+                        </h6>
+                        <div class="mt-3">
+                          <a
+                            href="/admin/<%= route %>-show/<%= course.id %>"
+                            class="btn btn-outline-primary btn-sm me-2"
+                          >
+                            <i class="fas fa-eye"></i>
+                          </a>
+
+                          <% if (activeType == 'trashed') { %>
+
+                          <a
+                            href="/admin/<%= route %>-restore/<%= course.id %>"
+                            class="btn btn-outline-success btn-sm me-2"
+                          >
+                         <i class="fas fa-undo"></i> Restore
+                          </a>
+                          <a
+                            href="/admin/<%= route %>-permanent-delete/<%= course.id %>"
+                            class="btn btn-outline-danger btn-sm"
+                          >
+                            <i class="fas fa-trash"></i> Delete
+                          </a>
+                          <% } else { %>
+
+                          <a
+                            href="/admin/<%= route %>-edit/<%= course.id %>"
+                            class="btn btn-outline-warning btn-sm me-2"
+                          >
+                            <i class="fas fa-pencil-alt"></i>
+                          </a>
+                          <a
+                            href="/admin/<%= route %>-delete/<%= course.id %>"
+                            class="btn btn-outline-danger btn-sm"
+                          >
+                            <i class="fas fa-trash"></i>
+                          </a>
+                          <% } %>
+                        </div>
+
+                        <% if (activeType === 'trashed') { %>
+                        <span class="badge badge-danger mt-3"
+                          >Deleted at <%= course.deleted_at %></span
+                        >
+                        <% } %>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <% }); %> <% } %>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%- include('../layouts/footer') %>
+
+<script>
+  const bulkDeleteBtn = document.getElementById("bulkDeleteBtn");
+const bulkRestoreBtn = document.getElementById("bulkRestoreBtn");
+const checkboxes = document.querySelectorAll(".bulk-checkbox");
+const selectAll = document.getElementById("selectAll");
+
+function updateBulkButtons() {
+  const anyChecked = Array.from(checkboxes).some(cb => cb.checked);
+  if (bulkDeleteBtn) bulkDeleteBtn.disabled = !anyChecked;
+  if (bulkRestoreBtn) bulkRestoreBtn.disabled = !anyChecked;
+}
+
+checkboxes.forEach(cb => cb.addEventListener("change", updateBulkButtons));
+selectAll.addEventListener("change", function() {
+  checkboxes.forEach(cb => cb.checked = this.checked);
+  updateBulkButtons();
+});
+
+async function bulkAction(endpoint, actionName) {
+  const selectedIds = Array.from(checkboxes)
+                           .filter(cb => cb.checked)
+                           .map(cb => cb.value);
+  if (!selectedIds.length) return;
+  if (!confirm(`Are you sure you want to ${actionName} selected books?`)) return;
+
+  try {
+    const response = await fetch(`/admin/book/${endpoint}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ids: selectedIds })
+    });
+    const result = await response.json();
+    alert(result.message);
+    if (result.success) location.reload();
+  } catch (err) {
+    alert(`Error: ${err.message}`);
+  }
+}
+
+if (bulkDeleteBtn) bulkDeleteBtn.addEventListener("click", () => bulkAction("bulk-delete", "delete"));
+if (bulkRestoreBtn) bulkRestoreBtn.addEventListener("click", () => bulkAction("bulk-restore", "restore"));
+
+</script>
+
+<script>
+document.getElementById('exportBtn').addEventListener('click', async function(e) {
+  e.preventDefault();
+  try {
+    const response = await fetch('/admin/books/export', { method: 'POST' });
+    if (!response.ok) throw new Error('Failed to export');
+    
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+
+    // Generate filename with current local date-time
+    const now = new Date();
+    const pad = (n) => n.toString().padStart(2, '0');
+    const timestamp = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}_${pad(now.getHours())}-${pad(now.getMinutes())}-${pad(now.getSeconds())}`;
+
+    a.href = url;
+    a.download = `books_export_${timestamp}.csv`; // dynamic filename
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    window.URL.revokeObjectURL(url); // clean up
+  } catch (err) {
+    alert(err.message);
+  }
+});
+</script>

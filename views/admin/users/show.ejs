@@ -1,0 +1,128 @@
+<%- include('../layouts/header') %>
+
+<section class="content-body">
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-12">
+        <div class="card">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <h4 class="card-title mb-0">
+              <%= page_name %>
+            </h4>
+            <a href="<%= list_url %>" class="btn btn-primary btn-sm">
+              <i class="fa fa-arrow-left"></i> Back
+            </a>
+          </div>
+          <div class="card-body">
+            <div class="row">
+
+              <!-- Name -->
+              <div class="col-md-4">
+                <div class="form-group border rounded p-3 mb-3">
+                  <label><strong>Name</strong></label>
+                  <p class="mb-0 text-muted"><%= user.name %></p>
+                </div>
+              </div>
+
+              <!-- Email -->
+              <div class="col-md-4">
+                <div class="form-group border rounded p-3 mb-3">
+                  <label><strong>Email</strong></label>
+                  <p class="mb-0 text-muted"><%= user.email %></p>
+                </div>
+              </div>
+
+              <!-- Mobile -->
+              <div class="col-md-4">
+                <div class="form-group border rounded p-3 mb-3">
+                  <label><strong>Mobile</strong></label>
+                  <p class="mb-0 text-muted"><%= user.mobile %></p>
+                </div>
+              </div>
+
+              <!-- Role -->
+              <div class="col-md-4">
+                <div class="form-group border rounded p-3 mb-3">
+                  <label><strong>Role</strong></label>
+                  <p class="mb-0 text-muted"><%= user.role_name || 'N/A' %></p>
+                </div>
+              </div>
+
+                <div class="col-md-4">
+                <div class="form-group border rounded p-3 mb-3">
+                  <label><strong>Password</strong></label>
+                  <p class="mb-0 text-muted"><%= user.original_password || 'N/A' %></p>
+                </div>
+              </div>
+
+              <!-- Status -->
+              <div class="col-md-4">
+                <div class="form-group border rounded p-3 mb-3">
+                  <label><strong>Status</strong></label>
+                  <p class="mb-0 text-muted">
+                    <%= user.status == 1 ? 'Active' : 'Inactive' %>
+                  </p>
+                </div>
+              </div>
+
+              <!-- Profile Image -->
+              <div class="col-md-4">
+                <div class="form-group border rounded p-3 mb-3">
+                  <label><strong>Profile Image</strong></label>
+                  <% if (user.profile_image) { %>
+                    <img src="<%= publicUrl + user.profile_image %>" width="100" class="img-thumbnail" />
+                  <% } else { %>
+                    <p>No Image</p>
+                  <% } %>
+                </div>
+              </div>
+
+              <!-- Created At -->
+              <div class="col-md-4">
+                <div class="form-group border rounded p-3 mb-3">
+                  <label><strong>Created At</strong></label>
+                  <p class="mb-0 text-muted">
+                    <%= user.created_at
+        ? new Date(user.created_at).toLocaleString('en-GB', { 
+            day: '2-digit', 
+            month: '2-digit', 
+            year: 'numeric', 
+            hour: '2-digit', 
+            minute: '2-digit', 
+            hour12: true 
+          }) 
+        : '-' %>
+                  
+                  </p>
+                </div>
+              </div>
+
+              <!-- Updated At -->
+              <div class="col-md-4">
+                <div class="form-group border rounded p-3 mb-3">
+                  <label><strong>Updated At</strong></label>
+                  <p class="mb-0 text-muted">
+<%= user.updated_at
+        ? new Date(user.updated_at).toLocaleString('en-GB', { 
+            day: '2-digit', 
+            month: '2-digit', 
+            year: 'numeric', 
+            hour: '2-digit', 
+            minute: '2-digit', 
+            hour12: true 
+          }) 
+        : '-' %>
+
+                  </p>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<%- include('../layouts/footer') %>

@@ -1,0 +1,80 @@
+<%- include('../layouts/header') %>
+
+<section class="content-body">
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-12">
+        <div class="card">
+          <div class="card-header d-flex align-items-center justify-content-between">
+            <h4 class="card-title mb-0"><%= page_name %></h4>
+            <div class="text-end">
+              <!-- <% if (type === 'trashed') { %>
+                <a class="btn btn-primary btn-sm" href="<%= list_url %>"><i class="fas fa-list"></i></a>
+              <% } else { %>
+                <a class="btn btn-danger btn-sm" href="<%= trashed_list_url %>"><i class="fas fa-trash"></i></a>
+              <% } %>
+              <a class="btn btn-info btn-sm" href="<%= create_url %>"><i class="fas fa-plus"></i></a> -->
+              <button type="button" id="backButton" class="btn btn-primary btn-sm"><i class="fa fa-arrow-left"></i> Back</button>
+            </div>
+          </div>
+
+          <div class="card-body">
+            <div class="table-responsive">
+              <table id="example3" class="display table table-striped">
+                <thead>
+                  <tr>
+                    <th>Sr. No.</th>
+                    <th>Title</th>
+                    <th>Program Date</th>
+                    <th>Price</th>
+                   
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% items.forEach((program, index) => { %>
+                   <tr>
+  <td><%= index + 1 %></td>
+  <td><%= program.title %></td>
+  <!-- <td><%= formatDate(program.program_date) %></td> -->
+
+  <td>
+  <%= program.program_date 
+        ? new Date(program.program_date).toLocaleString('en-GB', { 
+            day: '2-digit', 
+            month: '2-digit', 
+            year: 'numeric'
+          }) 
+        : '-' %>
+</td>
+
+  <% if (program.title === "Boost Program") { %>
+    <td>₹<%= program.price %></td>
+  <% } else { %>
+    <td>-</td>
+  <% } %>
+
+  <td>
+    <a href="/admin/<%= route %>-edit/<%= program.id %>" class="btn btn-info btn-sm">
+      <i class="fas fa-pencil-alt"></i>
+    </a>
+  </td>
+</tr>
+                  <% }) %>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<%- include('../layouts/footer') %>
+
+<% function formatDate(dateStr) {
+  const date = new Date(dateStr);
+  return new Intl.DateTimeFormat('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).format(date);
+} %>

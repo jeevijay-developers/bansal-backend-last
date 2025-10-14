@@ -1,0 +1,1317 @@
+const TestSeriesTest = require("../../models/TestSeriesTest");
+const Helper = require("../../helpers/Helper");
+const path = require("path");
+const fs = require("fs");
+const pool = require("../../db/database");
+const randomstring = require("randomstring");
+const cheerio = require("cheerio");
+const mammoth = require("mammoth");
+const jwt = require("jsonwebtoken");
+const bodyParser = require("body-parser");
+const { parseDocument, DomUtils } = require("htmlparser2");
+const sanitizeHtml = require("sanitize-html");
+const { validateRequiredFields } = require("../../helpers/validationsHelper");
+const express = require("express");
+const cors = require("cors");
+
+const mysql = require("mysql2/promise");
+const app = express();
+const actions_url = "/admin/test-series";
+const table_name = "live_test";
+const module_title = "Test Series";
+// Helper functions
+const checkImagePath = (relativePath) => {
+  if (!relativePath) return false;
+  const fullPath = path.join(
+    __dirname,
+    "..",
+    "public",
+    path.normalize(relativePath)
+  );
+  return fs.existsSync(fullPath);
+};
+
+const renderForm = async (res, options) => {
+  const { postId, course, action, formUrl, pageName, error, success } = options;
+  const categories = await Helper.getActiveCategoriesByType();
+  const testSeries = await Helper.getActiveTestSeries();
+
+  res.render("admin/exam/create", {
+    success,
+    error,
+    categories,
+    testSeries,
+    course,
+    form_url: formUrl,
+    page_name: pageName,
+    action,
+    image:
+      course && checkImagePath(course.image)
+        ? course.image
+        : "admin/images/default-featured-image.png",
+  });
+};
+
+const handleError = (res, req, message, redirectUrl = "back") => {
+  req.flash("error", message);
+  return res.redirect(redirectUrl);
+};
+
+const mammothOptions = {
+  convertImage: mammoth.images.inline(async (image) => {
+    const buffer = await image.read("base64");
+    return { src: `data:${image.contentType};base64,${buffer}` };
+  }),
+};
+
+const cleanHTML = (html) =>
+  sanitizeHtml(html, {
+    allowedTags: ["p", "b", "i", "u", "em", "strong", "span", "img", "br"],
+    allowedAttributes: { "*": ["style"], img: ["src"] },
+    allowedSchemes: ["data"],
+  });
+
+function extractKeyValuePairs(html) {
+  const doc = parseDocument(html);
+  const questions = [];
+
+  function walk(nodes) {
+    for (const node of nodes) {
+      if (node.name === "table") {
+        const rows = DomUtils.findAll((el) => el.name === "tr", node);
+        const q = {};
+        for (const row of rows) {
+          const cells = DomUtils.findAll((el) => el.name === "td", row);
+          if (cells.length >= 2) {
+            const key = DomUtils.getText(cells[0]).trim();
+            const val = cleanHTML(DomUtils.getInnerHTML(cells[1]));
+            q[key] = val;
+          }
+        }
+        if (Object.keys(q).length > 0) questions.push(q);
+      }
+      if (node.children) walk(node.children);
+    }
+  }
+
+  walk([doc]);
+  return questions;
+}
+
+async function ensureTable(keys) {
+  const [tables] = await pool
+    .promise()
+    .query(`SHOW TABLES LIKE 'live_test_questions'`);
+
+  if (tables.length === 0) {
+    const columns = keys.map((k) => `\`${k}\` LONGTEXT`).join(",");
+    await pool
+      .promise()
+      .execute(
+        `CREATE TABLE live_test_questions (id INT AUTO_INCREMENT PRIMARY KEY, ${columns})`
+      );
+    return;
+  }
+
+  const [existingCols] = await pool
+    .promise()
+    .query(`SHOW COLUMNS FROM live_test_questions`);
+  const existingColNames = existingCols.map((col) => col.Field);
+
+  for (const key of keys) {
+    if (!existingColNames.includes(key)) {
+      await pool
+        .promise()
+        .execute(`ALTER TABLE live_test_questions ADD COLUMN \`${key}\` TEXT`);
+    }
+  }
+}
+
+async function insertQuestion(data) {
+  const keys = Object.keys(data);
+  const fields = keys.map((k) => `\`${k}\``).join(",");
+  const placeholders = keys.map(() => "?").join(",");
+  const values = keys.map((k) => data[k]);
+  await pool
+    .promise()
+    .execute(
+      `INSERT INTO live_test_questions (${fields}) VALUES (${placeholders})`,
+      values
+    );
+}
+
+const multer = require("multer");
+
+// Set storage options
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "uploads/"); // Specify the upload directory
+  },
+  filename: (req, file, cb) => {
+    cb(null, Date.now() + "-" + file.originalname); // Set the filename format
+  },
+});
+
+// Create multer upload middleware with specific field name
+const uploaded = multer({
+  storage: storage,
+  limits: { fileSize: 5 * 1024 * 1024 }, // Max file size: 5MB
+}).single("image"); // This means the input field name should be 'image'
+
+// app.use(session({
+//   secret: 'secret',
+//   cookie: {maxAge:6000},
+//   resave: false,
+//   saveUninitialized: false
+// }));
+
+// Make helper functions available in all EJS templates via res.locals
+app.use((req, res, next) => {
+  res.locals.getLogoutUrl = getLogoutUrl;
+  res.locals.getDashboardUrl = getDashboardUrl;
+  userRole = req.session.userRole;
+  next();
+});
+
+const db = mysql.createPool({
+  host: "193.203.162.34",
+  user: "bansal_user", // Replace with your MySQL username
+  password: "Bansal@@2000", // Replace with your MySQL password
+  database: "bansal_db", // Replace with your database name
+  connectionLimit: 10, // Max number of simultaneous connection
+  port: 3306,
+});
+
+const upload = multer({ storage });
+
+function extractKeyValuePairs(html) {
+  const doc = parseDocument(html);
+  const questions = [];
+
+  function walk(nodes) {
+    for (const node of nodes) {
+      if (node.name === "table") {
+        const rows = DomUtils.findAll((el) => el.name === "tr", node);
+        const q = {};
+        for (const row of rows) {
+          const cells = DomUtils.findAll((el) => el.name === "td", row);
+          if (cells.length >= 2) {
+            const key = DomUtils.getText(cells[0]).trim();
+            const val = cleanHTML(DomUtils.getInnerHTML(cells[1]));
+            q[key] = val;
+          }
+        }
+        if (Object.keys(q).length > 0) questions.push(q);
+      }
+      if (node.children) walk(node.children);
+    }
+  }
+
+  walk([doc]);
+  return questions;
+}
+
+async function ensureTable(keys) {
+  const [tables] = await db.query(`SHOW TABLES LIKE 'live_test_questions'`);
+
+  if (tables.length === 0) {
+    const columns = keys.map((k) => `\`${k}\` LONGTEXT`).join(",");
+    await db.execute(
+      `CREATE TABLE live_test_questions (id INT AUTO_INCREMENT PRIMARY KEY, ${columns})`
+    );
+    return;
+  }
+
+  const [existingCols] = await db.query(
+    `SHOW COLUMNS FROM live_test_questions`
+  );
+  const existingColNames = existingCols.map((col) => col.Field);
+
+  for (const key of keys) {
+    if (!existingColNames.includes(key)) {
+      await db.execute(
+        `ALTER TABLE live_test_questions ADD COLUMN \`${key}\` TEXT`
+      );
+    }
+  }
+}
+
+async function insertQuestion(data) {
+  const keys = Object.keys(data);
+  const fields = keys.map((k) => `\`${k}\``).join(",");
+  const placeholders = keys.map(() => "?").join(",");
+  const values = keys.map((k) => data[k]);
+  await db.execute(
+    `INSERT INTO live_test_questions (${fields}) VALUES (${placeholders})`,
+    values
+  );
+}
+
+app.get("/", (_, res) => {
+  res.send(`
+    <html>
+      <head>
+        <title>Upload DOCX</title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+      </head>
+      <body class="bg-light">
+        <div class="container mt-5">
+          <h2 class="text-primary">Upload Question DOCX</h2>
+          <form method="POST" action="/upload" enctype="multipart/form-data">
+            <div class="mb-3">
+              <input type="file" class="form-control" name="docFile" accept=".docx" required>
+            </div>
+            <button type="submit" class="btn btn-success">Upload</button>
+          </form>
+        </div>
+      </body>
+    </html>
+  `);
+});
+
+module.exports = {
+  // QuestionUploads: async (req, res) => {
+
+  //   console.log('Line 273');
+  //   try {
+  //     const result = await mammoth.convertToHtml(
+  //       { path: req.file.path },
+  //       mammothOptions
+  //     );
+  //     const questions = extractKeyValuePairs(result.value);
+  //     if (questions.length === 0)
+  //       return res.status(400).send("No valid data found");
+
+  //     const allKeys = new Set();
+  //     questions.forEach((q) => Object.keys(q).forEach((k) => allKeys.add(k)));
+
+  //     await ensureTable([...allKeys]);
+
+  //     for (const q of questions) await insertQuestion(q);
+
+  //     fs.unlinkSync(req.file.path);
+  //     res.redirect("/questions");
+  //   } catch (err) {
+  //     console.error(err);
+  //     res.status(500).send("Error processing file.");
+  //   }
+  // },
+
+  // try {
+  //    const testId = req.body.test_id;
+  // const result = mammoth.convertToHtml({ path: req.file.path }, mammothOptions);
+  //   const questions = extractKeyValuePairs(result.value);
+  //   if (questions.length === 0) return res.status(400).send('No valid data found');
+
+  //   const allKeys = new Set();
+  //   questions.forEach(q => Object.keys(q).forEach(k => allKeys.add(k)));
+
+  //   await ensureTable([...allKeys]);
+
+  //   for (const q of questions) await insertQuestion(q, testId);
+
+  //   fs.unlinkSync(req.file.path);
+  //   return res.status(200).json({
+  //     success: true,
+  //     message: "Questions uploaded successfully",
+  //     redirect_url: `/admin/exam-question-list/${testId}`
+  //   });
+  // } catch (err) {
+  //   console.error(err);
+  //   res.status(500).send('Error processing file.');
+  // }
+
+  // QuestionUpload: async (req, res) => {
+
+  //   try {
+  //     const testId = req.body.test_id;
+  //     const result = await mammoth.convertToHtml({ path: req.file.path });
+  //     const html = result.value;
+
+  //     const $ = cheerio.load(html);
+  //     const questions = [];
+
+  //     $("table").each((index, table) => {
+  //       const questionData = {};
+
+  //       $(table)
+  //         .find("tr")
+  //         .each((i, row) => {
+  //           const key = $(row)
+  //             .find("td")
+  //             .eq(0)
+  //             .text()
+  //             .trim()
+  //             .toLowerCase()
+  //             .replace(/\s+/g, "_");
+  //           const value = $(row).find("td").eq(1).text().trim();
+
+  //           if (key) {
+  //             questionData[key] = value;
+  //           }
+  //         });
+
+  //       questionData.test_id = testId;
+  //       questions.push(questionData);
+  //     });
+
+  //     if (questions.length === 0) {
+  //       return res
+  //         .status(400)
+  //         .json({ success: false, message: "No valid questions found" });
+  //     }
+
+  //     await pool
+  //       .promise()
+  //       .query("DELETE FROM live_test_questions WHERE test_id = ?", [testId]);
+
+  //     // ✅ Insert new questions
+  //     for (const q of questions) {
+  //       //await insertQuestion(q, testId);
+
+  //       const keys = Object.keys(q); // ✅ correct variable
+  // const fields = keys.map((k) => `\`${k}\``).join(",");
+  // const placeholders = keys.map(() => "?").join(",");
+  // const values = keys.map((k) => q[k]);
+
+  // await pool
+  //   .promise()
+  //   .query(
+  //     `INSERT INTO live_test_questions (${fields}) VALUES (${placeholders})`,
+  //     values
+  //   );
+
+  //     }
+
+  //     fs.unlinkSync(req.file.path);
+
+  //     return res.status(200).json({
+  //       success: true,
+  //       message: "Questions uploaded successfully",
+  //       redirect_url: `/admin/exam-question-list/${testId}`,
+  //     });
+  //   } catch (err) {
+  //     console.error(err);
+  //     return res
+  //       .status(500)
+  //       .json({ success: false, message: "Error processing file." });
+  //   }
+  // },
+
+  QuestionUpload: async (req, res) => {
+    try {
+     // console.log(":inbox_tray: Upload started");
+      // Setup upload folder
+      const uploadDir = path.join(__dirname, "public", "uploads");
+      if (!fs.existsSync(uploadDir)) {
+        fs.mkdirSync(uploadDir, { recursive: true });
+      //  console.log(":open_file_folder: Upload folder created:", uploadDir);
+      }
+      // Convert DOCX to HTML + extract images
+      // const result = await mammoth.convertToHtml(
+      //   { path: req.file.path },
+      //   {
+      //     convertImage: mammoth.images.inline(async function (image) {
+      //       try {
+      //         const imageBuffer = await image.read("base64");
+      //         const imageName = `img_${Date.now()}.png`;
+      //         const imagePath = path.join(uploadDir, imageName);
+      //         fs.writeFileSync(imagePath, Buffer.from(imageBuffer, "base64"));
+      //         console.log(":white_check_mark: Image extracted:", imageName);
+      //         return { src: `/uploads/${imageName}` };
+      //       } catch (err) {
+      //         console.error(":x: Image extraction failed:", err.message);
+      //         return { src: "" };
+      //       }
+      //     }),
+      //   }
+      // );
+      const result = await mammoth.convertToHtml(
+        { path: req.file.path },
+        {
+          convertImage: mammoth.images.inline(async function (image) {
+            try {
+              const buffer = await image.read("base64");
+              const contentType = image.contentType; // like "image/png" or "image/jpeg"
+              const base64Src = `data:${contentType};base64,${buffer}`;
+           //   console.log(":paperclip: Base64 image embedded");
+              return { src: base64Src };
+            } catch (err) {
+              console.error(":x: Failed to read base64 image:", err.message);
+              return { src: "" };
+            }
+          }),
+        }
+      );
+      const testId = req.body.test_id;
+      const html = result.value;
+      const $ = cheerio.load(html);
+      const questions = [];
+      $("table").each((index, table) => {
+        const questionData = {};
+        const rows = $(table).find("tr");
+        const rowData = [];
+        rows.each((i, row) => {
+          const cell = $(row).find("td").eq(1);
+          // Extract text + image
+          const text = cell.text().trim();
+          const imgSrc = cell.find("img").attr("src");
+          let finalValue = "";
+          // if (imgSrc && text) {
+          //   finalValue = `<p>${text}</p><img src="${imgSrc}" />`;
+          // } else if (imgSrc) {
+          //   finalValue = `<img src="${imgSrc}" />`;
+          // } else {
+          //   finalValue = text;
+          // }
+          if (imgSrc && text) {
+            finalValue = `<p>${text}</p><img class="question-image-item" src="${imgSrc}" />`;
+          } else if (imgSrc) {
+            finalValue = `<img src="${imgSrc}" class="question-image-item"/>`;
+          } else {
+            finalValue = text;
+          }
+
+          rowData.push(finalValue);
+        });
+        // Map rowData to question fields
+
+        let answerRaw = rowData[6] || "";
+        let answer = answerRaw
+          .split(",")
+          .map((opt) => opt.trim().toUpperCase())
+          .filter((opt) => opt !== "")
+          .join(",");
+        questionData.question_no = rowData[0] || "";
+        questionData.subject = rowData[1] || "";
+        questionData.question = rowData[2] || "";
+        questionData.question_type = rowData[3] || "";
+        questionData.correct_marks = rowData[4] || "";
+        questionData.marks = rowData[4] || "";
+        questionData.incorrect_marks = rowData[5] || "";
+        questionData.answer = answer;
+        questionData.partial_marks = rowData[7] || 0;
+        questionData.test_id = testId;
+        questionData.created_at = new Date();
+        questionData.updated_at = new Date();
+        questions.push(questionData);
+      });
+      if (questions.length === 0) {
+        console.log(":warning: No valid questions parsed.");
+        return res
+          .status(400)
+          .json({ success: false, message: "No valid questions found" });
+      }
+      // Remove previous test questions
+      console.log(":wastebasket: Removing old questions for test_id:", testId);
+      await pool
+        .promise()
+        .query("DELETE FROM live_test_questions WHERE test_id = ?", [testId]);
+      // Insert new questions
+      for (const [index, q] of questions.entries()) {
+        const keys = Object.keys(q);
+        const fields = keys.map((k) => `\`${k}\``).join(",");
+        const placeholders = keys.map(() => "?").join(",");
+        const values = keys.map((k) => q[k] ?? null);
+        console.log(
+          `:floppy_disk: Inserting Q${index + 1}:`,
+          q.question?.slice(0, 50)
+        );
+        await pool
+          .promise()
+          .query(
+            `INSERT INTO live_test_questions (${fields}) VALUES (${placeholders})`,
+            values
+          );
+      }
+      fs.unlinkSync(req.file.path);
+      console.log(":broom: Cleaned up uploaded file");
+      return res.status(200).json({
+        success: true,
+        message: "Questions uploaded with text/image successfully.",
+        redirect_url: `/admin/exam-question-list/${testId}`,
+      });
+    } catch (err) {
+      console.error(":x: Error uploading questions:", err);
+      return res
+        .status(500)
+        .json({ success: false, message: "Error processing file." });
+    }
+  },
+
+  QuestionUploads: async (req, res) => {
+    try {
+      const testId = req.body.test_id;
+      const result = await mammoth.convertToHtml({ path: req.file.path });
+      const html = result.value;
+
+      const $ = cheerio.load(html);
+      const questions = [];
+
+      $("table").each((index, table) => {
+        const questionData = {};
+        const rows = $(table).find("tr");
+        const rowData = [];
+
+        rows.each((i, row) => {
+          const val = $(row).find("td").eq(1).text().trim();
+          rowData.push(val);
+        });
+
+        // Fixed mapping like your PHP example
+        questionData.subject = rowData[0] || "";
+        questionData.question = rowData[1] || "";
+        questionData.question_hindi = rowData[2] || "";
+        questionData.question_image = rowData[3] || "";
+        questionData.question_type = rowData[4] || "";
+        questionData.optionA = rowData[5] || "";
+        questionData.option1_hindi = rowData[6] || "";
+        questionData.optionB = rowData[7] || "";
+        questionData.option2_hindi = rowData[8] || "";
+        questionData.optionC = rowData[9] || "";
+        questionData.option3_hindi = rowData[10] || "";
+        questionData.optionD = rowData[11] || "";
+        questionData.option4_hindi = rowData[12] || "";
+        questionData.solution_english = rowData[13] || "";
+        questionData.solution_hindi = rowData[14] || "";
+        questionData.correct_marks = rowData[15] || "";
+        questionData.marks = rowData[15] || "";
+        questionData.incorrect_marks = rowData[16] || "";
+        questionData.answer = rowData[17] || "";
+
+        questionData.test_id = testId;
+
+        questions.push(questionData);
+      });
+
+      if (questions.length === 0) {
+        return res
+          .status(400)
+          .json({ success: false, message: "No valid questions found" });
+      }
+
+      await pool
+        .promise()
+        .query("DELETE FROM live_test_questions WHERE test_id = ?", [testId]);
+
+      for (const q of questions) {
+        const keys = Object.keys(q);
+        const fields = keys.map((k) => `\`${k}\``).join(",");
+        const placeholders = keys.map(() => "?").join(",");
+        const values = keys.map((k) => q[k]);
+
+        await pool
+          .promise()
+          .query(
+            `INSERT INTO live_test_questions (${fields}) VALUES (${placeholders})`,
+            values
+          );
+      }
+
+      fs.unlinkSync(req.file.path);
+
+      return res.status(200).json({
+        success: true,
+        message: "Questions uploaded successfully",
+        redirect_url: `/admin/exam-question-list/${testId}`,
+      });
+    } catch (err) {
+      console.error(err);
+      return res
+        .status(500)
+        .json({ success: false, message: "Error processing file." });
+    }
+  },
+
+  QuestionUploadss: async (req, res) => {
+    try {
+      const testId = req.body.test_id;
+      //const result = await mammoth.convertToHtml({ path: req.file.path });
+      const html = result.value;
+      const result = await mammoth.convertToHtml(
+        { path: req.file.path },
+        mammothOptions
+      );
+      const questions = extractKeyValuePairs(result.value);
+      const $ = cheerio.load(html);
+
+      $("table").each((index, table) => {
+        const questionData = {};
+
+        $(table)
+          .find("tr")
+          .each((i, row) => {
+            const key = $(row)
+              .find("td")
+              .eq(0)
+              .text()
+              .trim()
+              .toLowerCase()
+              .replace(/\s+/g, "_");
+            const value = $(row).find("td").eq(1).text().trim();
+
+            if (key) {
+              questionData[key] = value;
+            }
+          });
+
+        questionData.test_id = testId;
+        questions.push(questionData);
+      });
+
+      if (questions.length === 0)
+        return res
+          .status(400)
+          .json({ success: false, message: "No valid questions found" });
+
+      for (const q of questions) {
+        await insertQuestion(q, testId);
+      }
+
+      fs.unlinkSync(req.file.path);
+
+      return res.status(200).json({
+        success: true,
+        message: "Questions uploaded successfully",
+        redirect_url: `/admin/exam-question-list/${testId}`,
+      });
+    } catch (err) {
+      console.error(err);
+      return res
+        .status(500)
+        .json({ success: false, message: "Error processing file." });
+    }
+  },
+
+  // QuestionUpload: async (req, res) => {
+
+  //     try {
+
+  //       const testId = req.body.test_id;
+  //   const result = await mammoth.convertToHtml({ path: req.file.path }, mammothOptions);
+
+  //   const questions = extractKeyValuePairs(result.value);
+
+  //   if (questions.length === 0) return res.status(400).send('No valid data found');
+
+  //   const allKeys = new Set();
+  //   questions.forEach(q => Object.keys(q).forEach(k => allKeys.add(k)));
+
+  //   //await ensureTable([...allKeys]);
+
+  //   for (const q of questions) await insertQuestion(q,testId);
+
+  //   fs.unlinkSync(req.file.path);
+  //   res.redirect('/admin/exam-question-list');
+  // } catch (err) {
+  //   console.error(err);
+  //   res.status(500).send('Error processing file.');
+  // }
+  // },
+  //   const tableName = "live_test_questions";
+  //   const result = await mammoth.convertToHtml(
+  //     { path: req.file.path },
+  //     mammothOptions
+  //   );
+  //   const questions = extractKeyValuePairs(result.value);
+  //   console.log(questions);
+  //   if (questions.length === 0) {
+  //     return res.status(400).json({
+  //       success: false,
+  //       message: "No valid data found in uploaded document.",
+  //     });
+  //   }
+
+  //   const keys = Object.keys(questions[0]);
+  //   await ensureTable(tableName, keys);
+
+  //   const insertResults = {
+  //     success: true,
+  //     total: questions.length,
+  //     inserted: 0,
+  //     failed: 0,
+  //     errors: [],
+  //   };
+
+  //   for (const [index, q] of questions.entries()) {
+  //     const result = await insertQuestion(tableName, q);
+  //     if (result.success) {
+  //       insertResults.inserted += 1;
+  //     } else {
+  //       insertResults.failed += 1;
+  //       insertResults.errors.push({
+  //         index,
+  //         question: q,
+  //         error: result.message,
+  //       });
+  //     }
+  //   }
+
+  //   res.status(200).json({
+  //     success: insertResults.failed === 0,
+  //     message:
+  //       insertResults.failed === 0
+  //         ? "All questions uploaded successfully."
+  //         : `Some questions failed to upload.`,
+  //     details: insertResults,
+  //     redirect_url: "/admin/exam-list",
+  //   });
+  // } catch (error) {
+  //   console.error("QuestionUpload Error:", error);
+  //   res.status(500).json({
+  //     success: false,
+  //     message:
+  //       "Error uploading questions: " + (error.message || error.toString()),
+  //   });
+  // }
+
+  QuestionList: async (req, res) => {
+    try {
+      const testId = req.params.postId;
+      const poolPromise = pool.promise();
+      const [columns] = await poolPromise.query("SHOW COLUMNS FROM questions");
+      const [rows] = await poolPromise.query(
+        "SELECT * FROM live_test_questions WHERE test_id = ?",
+        [testId]
+      );
+      // const headers = columns.map(col => col.Field);
+      const headers = [
+        "id",
+        "Question Details",
+        "Question Type",
+        "Option1",
+        "Option2",
+        "Option3",
+        "Option4",
+        "Correct Answer",
+      ];
+      //   let html = `
+      // <html>
+      // <head>
+      //   <meta charset="UTF-8">
+      //   <title>Questions</title>
+      //   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+      //   <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      //   <style>
+      //     td { vertical-align: top; }
+      //   </style>
+      // </head>
+      // <body class="bg-light">
+      //   <div class="container mt-5">
+      //     <h2 class="text-primary">Questions</h2>
+      //     <a href="/" class="btn btn-success mb-3">Upload More</a>
+      //     <div class="table-responsive">
+      //       <table class="table table-bordered bg-white shadow">
+      //         <thead class="table-secondary">
+      //           <tr>${headers.map(h => `<th>${h}</th>`).join('')}<th>Actions</th></tr>
+      //         </thead>
+      //         <tbody>`;
+
+      // rows.forEach(row => {
+      //   html += `<tr>${
+      //     headers.map(h => `<td>${row[h] || ''}</td>`).join('')
+      //   }<td>
+      //     <a class="btn btn-sm btn-warning" href="/edit/${row.id}">Edit</a>
+      //     <a class="btn btn-sm btn-danger ms-2" href="/delete/${row.id}">Delete</a>
+      //   </td></tr>`;
+      // });
+
+      // html += `
+      //         </tbody>
+      //       </table>
+      //     </div>
+      //   </div>
+      //   <script>
+      //     // Re-render MathJax after DOM load
+      //     window.addEventListener('DOMContentLoaded', () => {
+      //       if (window.MathJax) MathJax.typeset();
+      //     });
+      //   </script>
+
+      // </body>
+      // </html>`;
+
+      // res.send(html);
+
+      const [exams] = await poolPromise.query(
+        "SELECT * FROM live_test WHERE id = ?",
+        [testId]
+      );
+
+      const exam = exams.length > 0 ? exams[0] : null;
+      res.render("admin/exam/question-list", {
+        success: req.flash("success"),
+        error: req.flash("error"),
+        headers,
+        rows,
+        req,
+        exam,
+        page_name: "Question List",
+        list_url: "/admin/exam-list",
+        trashed_list_url: "/admin/exam-list/?status=trashed",
+        create_url: "/admin/exam-create",
+      });
+    } catch (err) {
+      console.error("List Error:", err);
+      handleError(res, req, "Server error in listing data");
+    }
+  },
+
+  // QuestionList: async (req, res) => {
+  //     try {
+
+  //        const [columns] = await pool.promise().query('SHOW COLUMNS FROM questions');
+  //   const [rows] = await pool.promise().query('SELECT * FROM questions');
+  //   const headers = columns.map(col => col.Field);
+
+  //   let html = `
+  //   <html>
+  //   <head>
+  //     <title>Questions</title>
+  //     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  //   </head>
+  //   <body class="bg-light">
+  //     <div class="container mt-5">
+  //       <h2 class="text-primary">Questions</h2>
+  //       <a href="/" class="btn btn-success mb-3">Upload More</a>
+  //       <div class="table-responsive">
+  //         <table class="table table-bordered bg-white shadow">
+  //           <thead class="table-secondary">
+  //             <tr>${headers.map(h => `<th>${h}</th>`).join('')}<th>Actions</th></tr>
+  //           </thead>
+  //           <tbody>`;
+
+  //   rows.forEach(row => {
+  //     html += `<tr>${headers.map(h => `<td>${row[h] || ''}</td>`).join('')}
+  //     <td>
+  //       <a class="btn btn-sm btn-warning" href="/edit/${row.id}">Edit</a>
+  //       <a class="btn btn-sm btn-danger ms-2" href="/delete/${row.id}">Delete</a>
+  //     </td></tr>`;
+  //   });
+
+  //   html += `</tbody></table></div></div></body></html>`;
+  //   res.send(html);
+  // });
+  // and all data display to wxam/question-lisy
+  //     } catch (err) {
+  //       console.error("List Error:", err);
+  //       handleError(res, req, "Server error in listing data");
+  //     }
+  //   },
+
+  List: async (req, res) => {
+    try {
+      const status = req.query.status === "trashed" ? "trashed" : "active";
+      const tests = await TestSeriesTest.list(status);
+      res.render("admin/exam/list", {
+        success: req.flash("success"),
+        error: req.flash("error"),
+        customers: tests,
+        req,
+        actions_url: actions_url, // pass this to dynamically build URLs in EJS
+        status,
+        page_name: status === "trashed" ? "Trashed Exam List" : "Exam List",
+        list_url: "/admin/exam-list",
+        trashed_list_url: "/admin/exam-list/?status=trashed",
+        create_url: "/admin/exam-create",
+      });
+    } catch (err) {
+      console.error("List Error:", err);
+      handleError(res, req, "Server error in listing data");
+    }
+  },
+
+  Show: async (req, res) => {
+    try {
+      const testSeries = await TestSeriesTest.findById(req.params.postId);
+      if (!testSeries)
+        return handleError(
+          res,
+          req,
+          "Test series not found",
+          "/admin/exam-list"
+        );
+
+      res.render("admin/exam/show", {
+        success: req.flash("success"),
+        error: req.flash("error"),
+        post: testSeries,
+        list_url: "/admin/exam-list",
+        page_name: "Test Series Details",
+      });
+    } catch (error) {
+      console.error("Show Error:", error);
+      handleError(res, req, "An unexpected error occurred", "/admin/exam-list");
+    }
+  },
+
+  Edit: async (req, res) => {
+    try {
+      const course = await TestSeriesTest.findById(req.params.postId);
+
+      console.log(course);
+      if (!course)
+        return handleError(res, req, "Exam not found", "/admin/exam-list");
+
+      await renderForm(res, {
+        postId: req.params.postId,
+        course,
+        action: "Update",
+        formUrl: `/admin/exam-update/${req.params.postId}`,
+        pageName: "Edit Exam",
+        error: req.flash("error"),
+        success: req.flash("success"),
+      });
+    } catch (error) {
+      console.error("Edit Error:", error);
+      handleError(res, req, error.message, "/admin/exam-list");
+    }
+  },
+
+  Create: async (req, res) => {
+    try {
+      await renderForm(res, {
+        course: null,
+        action: "Create",
+        formUrl: "/admin/exam-update",
+        pageName: "Create Exam",
+        error: req.flash("error"),
+        success: req.flash("success"),
+      });
+    } catch (error) {
+      console.error("Create Error:", error);
+      handleError(res, req, error.message, "/admin/exam-list");
+    }
+  },
+
+  // Update: async (req, res) => {
+  //   try {
+  //     const postId = req.params.postId;
+
+  //     const data = {
+  //       category_id: req.body.category_id,
+  //       test_series_id: req.body.test_series_id,
+  //       test_name: req.body.test_name,
+  //       instruction: req.body.instruction,
+  //       marks: req.body.marks,
+  //       start_date_time: req.body.start_date_time,
+  //       end_date_time: req.body.end_date_time,
+  //       duration_test: req.body.duration_test,
+  //       result_date: req.body.result_date,
+  //       test_type: req.body.test_type, // <-- Add this line
+  //       updated_at: new Date(),
+  //     };
+
+  //     // Handle image upload
+  //     if (req.files?.image?.length > 0) {
+  //       data.image = `/uploads/test-series-test/${req.files.image[0].filename}`;
+  //     }
+
+  //     // Check for duplicate
+  //     const isDuplicate = await TestSeriesTest.checkDuplicate(
+  //       data.category_id,
+  //       data.test_series_id,
+  //       data.test_name,
+  //       postId || null
+  //     );
+
+  //     if (isDuplicate) {
+  //       return res.json({
+  //         success: false,
+  //         message: "Duplicate Exam found",
+  //       });
+  //     }
+
+  //     if (postId) {
+  //       // Update existing test
+  //       await TestSeriesTest.update(postId, data);
+  //       return res.json({
+  //         success: true,
+  //         redirect_url: "/admin/exam-list",
+  //         message: "Exam updated successfully",
+  //       });
+  //     } else {
+  //       // Create new test
+  //       data.created_at = new Date();
+  //       await TestSeriesTest.create(data);
+  //       return res.json({
+  //         success: true,
+  //         redirect_url: "/admin/exam-list",
+  //         message: "Exam created successfully",
+  //       });
+  //     }
+  //   } catch (error) {
+  //     console.error("Update Error:", error);
+  //     return res.json({
+  //       success: false,
+  //       message: "Error saving Exam",
+  //       error: error.message || error.toString(),
+  //     });
+  //   }
+  // },
+
+  Update: async (req, res) => {
+  try {
+    const postId = req.params.postId;
+const isInsert = !postId || postId === "null" || postId === "0";
+
+// Sanitize body
+const body = req.body;
+
+// Validation
+const errors = {};
+
+// Required fields
+if (!body.category_id || !body.category_id.toString().trim()) {
+  errors.category_id = ["Category is required"];
+}
+if (!body.test_series_id || !body.test_series_id.toString().trim()) {
+  errors.test_series_id = ["Test Series is required"];
+}
+if (!body.test_name || !body.test_name.toString().trim()) {
+  errors.test_name = ["Test Name is required"];
+}
+if (!body.marks || isNaN(body.marks)) {
+  errors.marks = ["Marks must be a valid number"];
+}
+if (!body.start_date_time) {
+  errors.start_date_time = ["Start Date & Time is required"];
+}
+if (!body.end_date_time) {
+  errors.end_date_time = ["End Date & Time is required"];
+}
+if (!body.duration_test || isNaN(body.duration_test)) {
+  errors.duration_test = ["Duration must be a valid number"];
+}
+
+// Status validation
+if (body.status !== undefined) {
+  if (!["0", "1"].includes(body.status.toString())) {
+    errors.status = ["Status must be '0' or '1'"];
+  }
+}
+
+// Image validation only for insert
+const imageFile = req.files?.image?.[0];
+if (isInsert && !imageFile) {
+  errors.image = ["Image is required"];
+}
+
+// Return validation errors
+if (Object.keys(errors).length > 0) {
+  return res.status(422).json({
+    success: false,
+    errors,
+    message: Object.values(errors)[0][0], // first error message
+  });
+}
+
+
+    // Prepare data
+    const data = {
+      category_id: body.category_id,
+      test_series_id: body.test_series_id,
+      test_name: body.test_name.trim(),
+      instruction: body.instruction || "",
+      marks: body.marks,
+      start_date_time: body.start_date_time,
+      end_date_time: body.end_date_time,
+      duration_test: body.duration_test,
+      result_date: body.result_date || null,
+      test_type: body.test_type || "normal",
+      updated_at: new Date(),
+    };
+
+    // Handle image upload
+    if (req.files?.image?.length > 0) {
+      data.image = `/uploads/test-series-test/${req.files.image[0].filename}`;
+    }
+
+    // Check for duplicate
+    const isDuplicate = await TestSeriesTest.checkDuplicate(
+      data.category_id,
+      data.test_series_id,
+      data.test_name,
+      postId || null
+    );
+
+    if (isDuplicate) {
+      return res.json({
+        success: false,
+        message: "Duplicate Exam found",
+      });
+    }
+
+    // Insert or Update
+    if (!isInsert) {
+      await TestSeriesTest.update(postId, data);
+      return res.json({
+        success: true,
+        redirect_url: "/admin/exam-list",
+        message: "Exam updated successfully",
+      });
+    } else {
+      data.created_at = new Date();
+      await TestSeriesTest.create(data);
+      return res.json({
+        success: true,
+        redirect_url: "/admin/exam-list",
+        message: "Exam created successfully",
+      });
+    }
+  } catch (error) {
+    console.error("Update Error:", error);
+    return res.json({
+      success: false,
+      message: "Error saving Exam",
+      error: error.message || error.toString(),
+    });
+  }
+},
+
+  Delete: async (req, res) => {
+    try {
+      await TestSeriesTest.softDelete(req.params.postId);
+      req.flash("success", "Exam deleted successfully");
+      res.redirect("/admin/exam-list");
+    } catch (error) {
+      console.error("Delete Error:", error);
+      handleError(res, req, "Error deleting Exam");
+    }
+  },
+
+  Restore: async (req, res) => {
+    try {
+      await TestSeriesTest.restore(req.params.postId);
+      req.flash("success", "Exam restored successfully");
+      res.redirect("/admin/exam-list?status=trashed");
+    } catch (error) {
+      console.error("Restore Error:", error);
+      handleError(res, req, "Error restoring Exam");
+    }
+  },
+
+  PermanentDelete: async (req, res) => {
+    try {
+      await TestSeriesTest.permanentDelete(req.params.postId);
+      req.flash("success", "Exam permanently deleted");
+      res.redirect("/admin/exam-list?status=trashed");
+    } catch (error) {
+      console.error("PermanentDelete Error:", error);
+      handleError(res, req, "Error permanently deleting Exam");
+    }
+  },
+  ExamAnalysis: async (req, res) => {
+    try {
+      const test_id = req.params.postId;
+      const promisePool = pool.promise();
+
+      // ✅ Get exam details from live_test
+      const [examData] = await promisePool.query(
+        `SELECT * FROM live_test WHERE id = ? LIMIT 1`,
+        [test_id]
+      );
+
+      if (examData.length === 0) {
+        return res
+          .status(404)
+          .render("admin/404", { message: "Exam not found" });
+      }
+
+      const exam = examData[0];
+
+      // ✅ Get result summary from live_test_result
+      const [results] = await promisePool.query(
+        `SELECT * FROM live_test_result WHERE test_id = ?`,
+        [test_id]
+      );
+
+      // ✅ Define headers
+      const headers = [
+        "Student Name",
+        "Correct",
+        "Wrong",
+        "Skipped",
+        "Correct Score",
+        "Wrong Score",
+        "Total Score",
+        "Rank",
+        "Accuracy",
+        "Attempted Time",
+      ];
+
+      // ✅ Format rows
+      let rows = await Promise.all(
+        results.map(async (r) => {
+          const student = await Helper.getStudentDetails(r.frontuser_id);
+          const correct = r.correct || 0;
+          const wrong = r.wrong || 0;
+          const skipped = r.skipped || 0;
+          const correct_score = parseFloat(r.correct_score || 0);
+          const wrong_score = parseFloat(r.wrong_score || 0);
+          const totalScore = correct_score - wrong_score;
+          const accuracy =
+            correct + wrong > 0
+              ? ((correct / (correct + wrong)) * 100).toFixed(2) + "%"
+              : "0%";
+
+          // ✅ Format attempt time
+          const attemptedTime = r.created_at
+            ? new Date(r.created_at).toLocaleString("en-IN", {
+                day: "2-digit",
+                month: "2-digit",
+                year: "numeric",
+                hour: "2-digit",
+                minute: "2-digit",
+                second: "2-digit",
+                hour12: true,
+              })
+            : "N/A";
+
+          return {
+            user_id: r.frontuser_id,
+            user_name: student ? student.name : "N/A",
+            correct,
+            wrong,
+            skipped,
+            correct_score,
+            wrong_score,
+            totalScore: totalScore.toFixed(2),
+            accuracy,
+            attempted_time: attemptedTime,
+          };
+        })
+      );
+
+      // ✅ Sort rows by totalScore descending
+      rows.sort((a, b) => b.totalScore - a.totalScore);
+
+      // ✅ Assign rank
+      rows = rows.map((row, index) => ({
+        ...row,
+        rank: index + 1,
+      }));
+
+      // ✅ Render result-analysis view
+      res.render("admin/exam/result-analysis", {
+        success: req.flash("success"),
+        error: req.flash("error"),
+        headers,
+        rows,
+        req,
+        results,
+        exam,
+        page_name: "Result Analysis",
+        list_url: "/admin/exam-list",
+        trashed_list_url: "/admin/exam-list/?status=trashed",
+        create_url: "/admin/exam-create",
+      });
+    } catch (error) {
+      console.error("Error in ExamAnalysis:", error);
+      res.status(500).json({
+        status: false,
+        message: "Server Error",
+      });
+    }
+  },
+};

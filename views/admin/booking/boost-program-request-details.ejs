@@ -1,0 +1,72 @@
+<%- include('../layouts/header') %>
+
+<section class="content-body">
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-12">
+        <div class="card">
+          <div class="card-header d-flex align-items-center justify-content-between">
+            <h4 class="card-title mb-0"><%= title %></h4>
+            <a href="/admin/boost-program-requests" class="btn btn-primary btn-sm">
+              <i class="fa fa-arrow-left"></i> Back to List
+            </a>
+          </div>
+
+          <div class="card-body">
+            <table class="table table-bordered table-striped">
+              <tbody>
+                <tr><th>ID</th><td><%= request.id %></td></tr>
+                
+                <tr><th>Name</th><td><%= request.name %></td></tr>
+                <tr><th>Email</th><td><%= request.email %></td></tr>
+                <tr><th>Mobile</th><td><%= request.mobile %></td></tr>
+                <tr><th>Program Type</th><td><%= request.program_type %></td></tr>
+                <tr><th>Program Date</th><td><%= request.program_date %></td></tr>
+                <tr><th>Price</th><td><%= request.price %></td></tr>
+                <tr><th>Transaction ID</th><td><%= request.transaction_id || 'N/A' %></td></tr>
+                <tr><th>Status</th><td><%= request.status === 1 ? 'Active' : 'Inactive' %></td></tr>
+                <tr><th>DOB</th><td> <%= request.dob
+        ? new Date(request.dob).toLocaleString('en-GB', { 
+            day: '2-digit', 
+            month: '2-digit', 
+            year: 'numeric', 
+            hour: '2-digit', 
+            minute: '2-digit', 
+            hour12: true 
+          }) 
+        : '-' %></td></tr>
+
+                
+
+                <tr><th>Gender</th><td><%= request.gender || 'N/A' %></td></tr>
+                <tr><th>Father Name</th><td><%= request.father_name || 'N/A' %></td></tr>
+                <tr><th>Mother Name</th><td><%= request.mother_name || 'N/A' %></td></tr>
+                <tr><th>Stream</th><td><%= request.stream || 'N/A' %></td></tr>
+                <tr><th>Class</th><td><%= request.class || 'N/A' %></td></tr>
+                <tr><th>Test Dated</th><td><%= request.test_date
+        ? new Date(request.test_date).toLocaleString('en-GB', { 
+            day: '2-digit', 
+            month: '2-digit', 
+            year: 'numeric'
+          }) 
+        : '-' %></td></tr>
+                <tr><th>Centre</th><td><%= request.centre || 'N/A' %></td></tr>
+                <tr><th>Address</th><td><%= request.address || 'N/A' %></td></tr>
+                <tr><th>Pin Code</th><td><%= request.pin_code || 'N/A' %></td></tr>
+                <tr><th>City</th><td><%= request.city || 'N/A' %></td></tr>
+                <tr><th>State</th><td><%= request.state || 'N/A' %></td></tr>
+                <tr><th>School Name</th><td><%= request.school_name || 'N/A' %></td></tr>
+                <tr><th>School Board</th><td><%= request.school_board || 'N/A' %></td></tr>
+                <tr><th>Agree</th><td><%= request.agree === 1 ? 'Yes' : 'No' %></td></tr>
+                <tr><th>Created At</th><td><%= new Date(request.created_at).toLocaleString() %></td></tr>
+                <tr><th>Updated At</th><td><%= new Date(request.updated_at).toLocaleString() %></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<%- include('../layouts/footer') %>

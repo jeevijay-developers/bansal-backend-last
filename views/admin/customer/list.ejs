@@ -1,0 +1,477 @@
+<%- include('../layouts/header') %>
+
+<section class="content-body">
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-12">
+        <div class="card">
+          <div
+            class="card-header d-flex align-items-center justify-content-between"
+          >
+            <h4 class="card-title mb-0"><%= page_name %></h4>
+
+            <div class="row">
+              <div class="col-12 text-end">
+                <% if (req.query.status==='trashed' ) { %>
+                <a class="btn btn-primary" href="/admin/student-list">
+                  <i class="fas fa-list"></i> List
+                </a>
+                <% } else { %>
+                <a
+                  class="btn btn-danger btn-sm"
+                  href="/admin/student-list/?status=trashed"
+                >
+                  <i class="fas fa-trash"></i>
+                </a>
+                <% } %>
+
+                <a class="btn btn-info btn-sm" href="/admin/student-create">
+                  <i class="fas fa-plus"></i>
+                </a>
+                <button
+                  type="button"
+                  id="backButton"
+                  class="btn btn-primary btn-sm"
+                >
+                  <i class="fa fa-arrow-left"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="card-body">
+          <div class="row align-items-center mb-3">
+  <!-- Status Buttons -->
+  <div class="col-md-6 mb-2 mb-md-0">
+    <div class="btn-group" role="group" aria-label="Status Filter">
+      <a href="/admin/student-list/?status=active" class="btn btn-outline-primary" id="btn-active">Active</a>
+      <a href="/admin/student-list/?status=inactive" class="btn btn-outline-primary" id="btn-inactive">Inactive</a>
+    </div>
+  </div>
+
+  <!-- Search & Reset -->
+  <div class="col-md-6">
+    <div class="input-group">
+      <input
+        type="text"
+        id="searchInput"
+        class="form-control"
+        placeholder="Search by name, mobile, or email"
+        value="<%= search %>"
+      />
+      <button id="searchBtn" class="btn btn-primary">Search</button>
+      <a id="resetBtn" class="btn btn-secondary" style="align-items: center;
+    display: flex
+;" href="/admin/student-list/active">Reset</a>
+    </div>
+  </div>
+</div>
+
+<% if (success && success.length > 0) { %>
+  <div class="alert alert-success alert-dismissible fade show" role="alert">
+    <%= success %>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+  </div>
+<% } %>
+
+<% if (error && error.length > 0) { %>
+  <div class="alert alert-danger alert-dismissible fade show" role="alert">
+    <%= error %>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+  </div>
+<% } %>
+
+
+<hr>
+            <div class="table-responsive">
+
+    
+
+
+
+
+
+<div class="d-flex align-items-center mb-2 justify-content-between">
+  <% if (status1 !== 'trashed') { %>
+    <button id="bulkDeleteBtn" class="btn btn-danger btn-sm me-2" disabled>
+      <i class="fa fa-trash"></i> Delete Selected
+    </button>
+  <% } %>
+
+  <% if (status1 === 'trashed') { %>
+    <button id="bulkRestoreBtn" class="btn btn-success btn-sm me-2" disabled>
+      <i class="fa fa-undo"></i> Restore Selected
+    </button>
+  <% } %>
+
+
+   <% if (customers.length > 0 && permissions.includes('Student Export')) { %>
+  <a href="#" id="exportBtn" class="btn btn-success btn-sm">
+    <i class="fas fa-file-export"></i> Export Students
+  </a>
+<% } %>
+
+
+ <button type="button" id="importButton" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#importModal">
+  <i class="fa fa-arrow-up"></i> Import Students
+</button>
+</div>
+<hr>
+
+              <table id="example3" class="display table-responsive-lg">
+                <!-- <thead>
+                                    <tr>
+                                        <th>Sr No</th>
+                                        <th>Name</th>
+                                        <th>Department</th>
+                                        <th>Gender</th>
+                                        <th>Education</th>
+                                        <th>Mobile</th>
+                                        <th>Email</th>
+                                        <th>Joining Date</th>
+                                         <th>Status</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr> <td>1</td>
+                                        
+                                        <td>Tiger Nixon</td>
+                                        <td>Architect</td>
+                                        <td>Male</td>
+                                        <td>M.COM., P.H.D.</td>
+                                        <td><a href="javascript:void(0);"><strong>123 456 7890</strong></a></td>
+                                        <td><a href="javascript:void(0);"><strong><span class="__cf_email__" data-cfemail="b1d8dfd7def1d4c9d0dcc1ddd49fd2dedc">[email&#160;protected]</span></strong></a></td>
+                                        <td>2011/04/25</td>
+                                        <td><span class="badge light badge-success">Paid</span></td>
+                                        <td>
+											<div class="d-flex">
+												<a href="#" class="btn btn-primary shadow btn-xs sharp me-1"><i class="fas fa-pencil-alt"></i></a>
+												<a href="#" class="btn btn-danger shadow btn-xs sharp"><i class="fa fa-trash"></i></a>
+											</div>												
+										</td>												
+                                    </tr>
+                                  
+                                   
+                                </tbody> -->
+                <thead>
+                  <tr>
+                     <th><input type="checkbox" id="selectAll" /></th> <!-- Bulk select all -->
+                    <th>Sr.No #</th>
+                    <th>Student UID</th>
+                    <th>Student Name</th>
+                     
+                       <th>Course</th>
+                    <th>City</th>
+                   
+                    <th>Category</th>
+                      <th>Class</th>
+                    <% if (status1 === 'trashed') { %>
+  <th>Deleted Time</th>
+<% } else { %>
+  <th>Status</th>
+<% } %>
+<th>Joining Date</th>
+
+
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% customers.forEach((customer, index) => { %>
+                  <tr>
+                     <td>
+     
+        <input type="checkbox" class="student-checkbox" value="<%= customer.id %>" />
+     
+    </td>
+                    <td><%= index + 1 %></td>
+                    <td>BNS-<%= customer.id %></td>
+                    <td><%= customer.name %> ( <%= customer.mobile %> )</td>
+                   
+                  
+                      <td><%= customer.ordersCount %></td>
+                        <td><%= customer.city %></td>
+                    <td><%= customer.category_name %></td> 
+                     <td><%= customer.class_name %></td> 
+                    <td>
+
+                      <% if (status1 === 'trashed') { %>
+  <%= customer.deleted_at %>
+<% } else { %>
+  <% if (customer.status == 1) { %>
+                      <label class="badge badge-success">Active</label>
+                      <% } else { %>
+                      <label class="badge badge-danger">Inactive</label>
+                      <% } %>
+<% } %>
+
+                     
+                    </td>
+
+                    <!-- <td><%= formatDate(customer.created_at) %></td> -->
+
+                    <td>
+  <%= customer.created_at
+        ? new Date(customer.created_at).toLocaleString('en-GB', { 
+            day: '2-digit', 
+            month: '2-digit', 
+            year: 'numeric', 
+            hour: '2-digit', 
+            minute: '2-digit', 
+            hour12: true 
+          }) 
+        : '-' %>
+</td>
+                    <td>
+                      <a
+                        href="/admin/student-show/<%= customer.id %>"
+                        class="btn btn-primary shadow btn-xs sharp me-1"
+                        ><i class="fas fa-eye"></i
+                      ></a>
+                      
+                      <% if (status1 != 'trashed') { %>
+                      <a
+                        href="/admin/student-edit/<%= customer.id %>"
+                        class="btn btn-primary shadow btn-xs sharp me-1"
+                        ><i class="fas fa-pencil-alt"></i
+                      ></a>
+                          <a
+                        href="/admin/student-delete/<%= customer.id %>"
+                        class="btn btn-danger shadow btn-xs sharp"
+                        onclick="return confirm('Are you sure you want to delete this customer?');"
+                        ><i class="fa fa-trash"></i
+                      ></a>  
+                      <% } %>
+                    <% if (status1 == 'trashed') { %>
+                      <a
+                        href="/admin/student-restore/<%= customer.id %>"
+                        class="btn btn-danger shadow btn-xs sharp"
+                        onclick="return confirm('Are you sure you want to restore this customer?');"
+                        ><i class="fa fa-undo"></i></a>
+                       <a
+                        href="/admin/student-permanent-delete/<%= customer.id %>"
+                        class="btn btn-danger shadow btn-xs sharp"
+                        onclick="return confirm('Are you sure you want to permanent delete this customer?');"
+                        ><i class="fa fa-trash"></i
+                      ></a>
+                      <% } %>
+                    </td>
+                  </tr>
+                  <% }); %> <% function formatDate(dateString) { const date =
+                  new Date(dateString); const options = { year: 'numeric',
+                  month: 'short', day: 'numeric', hour: 'numeric', minute:
+                  'numeric', hour12: true }; return new
+                  Intl.DateTimeFormat('en-US', options).format(date); } %>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal fade" id="importModal" tabindex="-1" aria-labelledby="importModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="importModalLabel">Import Students</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form id="importForm" enctype="multipart/form-data">
+          <div class="mb-3">
+            <label for="file" class="form-label">Upload Excel/CSV File</label>
+            <input type="file" class="form-control" name="file" id="file" accept=".xlsx, .xls, .csv" required />
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+  <button type="button" id="uploadBtn" class="btn btn-primary">
+    <span id="uploadBtnText">Upload</span>
+    <span id="uploadLoader" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+  </button>
+</div>
+    </div>
+  </div>
+</div>
+</section>
+
+
+<%- include('../layouts/footer') %>
+
+<script>
+  const path = window.location.pathname;
+
+  if (path.includes('/admin/student-list/active')) {
+    document.getElementById('btn-active').classList.add('active');
+  } else if (path.includes('/admin/student-list/inactive')) {
+    document.getElementById('btn-inactive').classList.add('active');
+  }
+</script>
+
+<script>
+  document.getElementById("searchBtn").addEventListener("click", function () {
+    const searchValue = document.getElementById("searchInput").value.trim();
+    const status = "<%= status1 %>"; // Example: "active", "inactive", etc.
+
+    // Redirect to: /admin/student-list/active?search=9772079144
+   // window.location.href = `/admin/student-list/${status}?search=${encodeURIComponent(searchValue)}`;
+      window.location.href = `/admin/student-list/?status=${status}&search=${encodeURIComponent(searchValue)}`;
+  });
+</script>
+
+
+<script>
+  document.getElementById("uploadBtn").addEventListener("click", async function () {
+    const uploadBtn = document.getElementById("uploadBtn");
+    const uploadBtnText = document.getElementById("uploadBtnText");
+    const uploadLoader = document.getElementById("uploadLoader");
+
+    // Show loader
+    uploadBtn.disabled = true;
+    uploadBtnText.textContent = "Uploading...";
+    uploadLoader.classList.remove("d-none");
+
+    const formData = new FormData(document.getElementById("importForm"));
+
+    try {
+      const response = await fetch("/admin/student/import-students", {
+        method: "POST",
+        body: formData,
+        headers: {
+          "Accept": "application/json"
+        }
+      });
+
+      const result = await response.json();
+      alert(result.message);
+      window.location.reload();
+    } catch (error) {
+      alert("Error uploading file: " + error.message);
+    } finally {
+      // Hide loader
+      uploadBtn.disabled = false;
+      uploadBtnText.textContent = "Upload";
+      uploadLoader.classList.add("d-none");
+    }
+  });
+</script>
+
+
+<script>
+  const bulkDeleteBtn = document.getElementById("bulkDeleteBtn");
+  const checkboxes = document.querySelectorAll(".student-checkbox");
+  const selectAll = document.getElementById("selectAll");
+
+  function updateBulkDeleteButton() {
+    const anyChecked = Array.from(checkboxes).some(cb => cb.checked);
+    bulkDeleteBtn.disabled = !anyChecked;
+  }
+
+  // On individual checkbox change
+  checkboxes.forEach(cb => cb.addEventListener("change", updateBulkDeleteButton));
+
+  // On select/deselect all
+  selectAll.addEventListener("change", function() {
+    checkboxes.forEach(cb => cb.checked = this.checked);
+    updateBulkDeleteButton();
+  });
+
+  // Bulk Delete click
+  bulkDeleteBtn.addEventListener("click", async function() {
+    const selectedIds = Array.from(checkboxes)
+                             .filter(cb => cb.checked)
+                             .map(cb => cb.value);
+
+    if (selectedIds.length === 0) return; // safety
+
+    if (!confirm("Are you sure you want to delete selected students?")) return;
+
+    try {
+      const response = await fetch("/admin/student/bulk-delete", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ids: selectedIds })
+      });
+
+      const result = await response.json();
+      alert(result.message);
+
+      if (result.success) location.reload();
+    } catch (err) {
+      alert("Error deleting students: " + err.message);
+    }
+  });
+</script>
+
+
+<script>
+  const bulkRestoreBtn = document.getElementById("bulkRestoreBtn");
+  
+  function updateBulkRestoreButton() {
+    const anyChecked = Array.from(checkboxes).some(cb => cb.checked);
+    bulkRestoreBtn.disabled = !anyChecked;
+  }
+
+  // Checkbox change event
+  checkboxes.forEach(cb => cb.addEventListener("change", updateBulkRestoreButton));
+
+  // Bulk Restore click
+  bulkRestoreBtn.addEventListener("click", async function() {
+    const selectedIds = Array.from(checkboxes)
+                             .filter(cb => cb.checked)
+                             .map(cb => cb.value);
+
+    if (selectedIds.length === 0) return; // safety
+
+    if (!confirm("Are you sure you want to restore selected students?")) return;
+
+    try {
+      const response = await fetch("/admin/student/bulk-restore", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ids: selectedIds })
+      });
+
+      const result = await response.json();
+      alert(result.message);
+
+      if (result.success) location.reload();
+    } catch (err) {
+      alert("Error restoring students: " + err.message);
+    }
+  });
+</script>
+
+
+<script>
+document.getElementById('exportBtn').addEventListener('click', async function(e) {
+  e.preventDefault();
+  try {
+    const response = await fetch('/admin/student/export', { method: 'POST' });
+ 
+if (!response.ok) throw new Error(response.message);
+
+    
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+
+    // Generate filename with current local date-time
+    const now = new Date();
+    const pad = (n) => n.toString().padStart(2, '0');
+    const timestamp = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}_${pad(now.getHours())}-${pad(now.getMinutes())}-${pad(now.getSeconds())}`;
+
+    a.href = url;
+    a.download = `customer_export_${timestamp}.csv`; // dynamic filename
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    window.URL.revokeObjectURL(url); // clean up
+  } catch (err) {
+    alert(err.message);
+  }
+});
+</script>

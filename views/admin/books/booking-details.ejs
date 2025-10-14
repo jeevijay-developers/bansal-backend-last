@@ -1,0 +1,188 @@
+<%- include('../layouts/header') %>
+
+<section class="content-body">
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-12">
+        <div class="card">
+          <div class="card-header d-flex align-items-center justify-content-between">
+            <h4 class="card-title mb-0"><%= page_name %></h4>
+            <div class="row">
+              <div class="col-12 text-end">
+                <button type="button" id="backButton" class="btn btn-primary btn-sm">
+                  <i class="fa fa-arrow-left"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="card-body">
+
+            <!-- ================= Order Details ================= -->
+            <div class="card mb-4">
+              <div class="card-body">
+                <h5 class="mb-3">Order Details</h5>
+                <table class="table table-bordered">
+                  <tbody>
+                    <tr><th>Order ID</th><td><%= order.order_id || '-' %></td></tr>
+                    <tr><th>Transaction ID</th><td><%= order.transaction_id || '-' %></td></tr>
+                    <tr><th>Payment Type</th><td><%= order.payment_type || '-' %></td></tr>
+                    <tr><th>Payment Status</th><td><%= order.payment_status || '-' %></td></tr>
+                    <tr><th>Order Status</th><td><%= order.order_status || '-' %></td></tr>
+                    <tr><th>Discount Amount</th><td>₹<%= order.discount_amount || '0.00' %></td></tr>
+                    <tr><th>Total Amount</th><td>₹<%= order.total_amount || '0.00' %></td></tr>
+                    <tr><th>Created At</th><td>
+  <%= order.created_at
+        ? new Date(order.created_at).toLocaleString('en-GB', { 
+            day: '2-digit', 
+            month: '2-digit', 
+            year: 'numeric', 
+            hour: '2-digit', 
+            minute: '2-digit', 
+            hour12: true 
+          }) 
+        : '-' %>
+</td></tr>
+                                        
+                    <tr><th>Updated At</th><td>
+  <%= order.updated_at
+        ? new Date(order.updated_at).toLocaleString('en-GB', { 
+            day: '2-digit', 
+            month: '2-digit', 
+            year: 'numeric', 
+            hour: '2-digit', 
+            minute: '2-digit', 
+            hour12: true 
+          }) 
+        : '-' %>
+</td></td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- ================= Customer Details ================= -->
+            <div class="card mb-4">
+              <div class="card-body">
+                <h5 class="mb-3">Customer Details</h5>
+                <table class="table table-bordered">
+                  <tbody>
+                    <tr><th>Name</th><td><%= order.customer_name || '-' %></td></tr>
+                    <tr><th>Email</th><td><%= order.customer_email || '-' %></td></tr>
+                    <tr><th>Mobile</th><td><%= order.customer_mobile || '-' %></td></tr>
+                    <tr><th>User ID</th><td><%= order.user_id || '-' %></td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- ================= Shipping / Delivery Details ================= -->
+            <div class="card mb-4">
+              <div class="card-body">
+                <h5 class="mb-3">Shipping & Delivery Details</h5>
+                <table class="table table-bordered">
+                  <tbody>
+                    <tr><th>Address ID</th><td><%= order.address_id || '-' %></td></tr>
+                    <tr><th>First Name</th><td><%= order.first_name || '-' %></td></tr>
+                    <tr><th>Last Name</th><td><%= order.last_name || '-' %></td></tr>
+                    <tr><th>Address</th><td><%= order.address || '-' %></td></tr>
+                    <tr><th>City</th><td><%= order.city_id || '-' %></td></tr>
+                    <tr><th>State</th><td><%= order.state_id || '-' %></td></tr>
+                    <tr><th>Pin Code</th><td><%= order.pin_code || '-' %></td></tr>
+                    <tr><th>Save Info</th><td><%= order.saveInfo || '-' %></td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+     <div class="card mb-4">
+              <div class="card-body">       
+<h5 class="mb-3">Order Status History</h5>
+<table class="table table-bordered">
+  <thead>
+    <tr>
+      <th>#</th>
+      <th>Previous Status</th>
+      <th>New Status</th>
+      <th>Updated By</th>
+      <th>Remark</th>
+      <th>Date</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% if (statusHistory && statusHistory.length) { %>
+      <% statusHistory.forEach((status, index) => { %>
+        <tr>
+          <td><%= index + 1 %></td>
+          <td><%= status.previous_status %></td>
+          <td><%= status.new_status %></td>
+          <td><%= status.updated_by_name || '-' %></td>
+          <td><%= status.remark || '-' %></td>
+         
+          <td>
+  <%= status.created_at
+        ? new Date(status.created_at).toLocaleString('en-GB', { 
+            day: '2-digit', 
+            month: '2-digit', 
+            year: 'numeric', 
+            hour: '2-digit', 
+            minute: '2-digit', 
+            hour12: true 
+          }) 
+        : '-' %>
+</td>
+        </tr>
+      <% }) %>
+    <% } else { %>
+      <tr><td colspan="6" class="text-center">No status history found</td></tr>
+    <% } %>
+  </tbody>
+</table>
+</div>
+     </div>
+
+            <!-- ================= Order Items ================= -->
+            <div class="card mb-4">
+              <div class="card-body">
+                <h5 class="mb-3">Order Items (<%= order.items_count || 0 %>)</h5>
+                <table class="table table-striped">
+                  <thead>
+                    <tr>
+                      <th>#</th>
+                      <th>Book</th>
+                      <th>Qty</th>
+                      <th>Price</th>
+                      <th>Offer Price</th>
+                      <th>Total</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <% if(order.items && order.items.length) { %>
+                      <% order.items.forEach((item, index) => { %>
+                        <tr>
+                          <td><%= index+1 %></td>
+                          <td><%= item.item_name %></td>
+                          <td><%= item.quantity %></td>
+                          <td>₹<%= item.price %></td>
+                          <td><%= item.offer_price ? "₹" + item.offer_price : "-" %></td>
+                          <td>₹<%= item.total_price %></td>
+                        </tr>
+                      <% }) %>
+                    <% } else { %>
+                      <tr><td colspan="6" class="text-center">No items found</td></tr>
+                    <% } %>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <a href="<%= back_url %>" class="btn btn-secondary">Back to list</a>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<%- include('../layouts/footer') %>

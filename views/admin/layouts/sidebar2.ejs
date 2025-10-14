@@ -1,0 +1,264 @@
+<div class="deznav">
+  <div class="deznav-scroll">
+    <ul class="metismenu" id="menu">
+      <li>
+        <a href="/admin/dashboard" class="ai-icon" aria-expanded="false">
+          <i class="fas fa-tachometer-alt"></i>
+          <span class="nav-text">Dashboard</span>
+        </a>
+      </li>
+
+      <% if (permissions.includes('Center Master')) { %>
+      <li class="nav-item">
+        <a class="nav-link" href="/admin/center-list">
+          <i class="fas fa-school menu-icon"></i>
+          <span class="menu-title">Center Management</span>
+        </a>
+      </li>
+      <% } %>
+
+      <% if (permissions.includes('Faculty Master')) { %>
+      <li class="nav-item">
+        <a class="nav-link" href="/admin/faculty-list">
+          <i class="fas fa-chalkboard-teacher menu-icon"></i>
+          <span class="menu-title">Faculty Management</span>
+        </a>
+      </li>
+      <% } %>
+
+      <% if (permissions.includes('Course List')) { %>
+      <li class="nav-item">
+        <a class="nav-link" href="/admin/course-list/all">
+          <i class="fas fa-book menu-icon"></i>
+          <span class="menu-title">Course Management</span>
+        </a>
+      </li>
+      <% } %>
+
+      <% if (permissions.includes('Coupon Master')) { %>
+      <li class="nav-item">
+        <a class="nav-link" href="/admin/coupon-list">
+          <i class="fas fa-percent menu-icon"></i>
+          <span class="menu-title">Coupon Management</span>
+        </a>
+      </li>
+      <% } %>
+
+      <% if (permissions.includes('Student List')) { %>
+      <li class="nav-item">
+        <a class="nav-link" href="/admin/student-list">
+          <i class="fas fa-user-graduate menu-icon"></i>
+          <span class="menu-title">Student Management</span>
+        </a>
+      </li>
+      <% } %>
+
+      <% if (permissions.includes('Service Master')) { %>
+      <li class="nav-item">
+        <a class="nav-link" href="/admin/service-list">
+          <i class="fas fa-concierge-bell menu-icon"></i>
+          <span class="menu-title">Service Management</span>
+        </a>
+      </li>
+      <% } %>
+
+      <!-- <% if (permissions.includes('Book Master')) { %>
+      <li class="nav-item">
+        <a class="nav-link" href="/admin/book-list">
+          <i class="fas fa-book-open menu-icon"></i>
+          <span class="menu-title">Book Store Management</span>
+        </a>
+      </li>
+      <% } %> -->
+
+      
+      <% if (permissions.includes('Book Master') || permissions.includes('Book Master')) { %>
+      <li class="has-menu">
+        <a class="has-arrow ai-icon" href="javascript:void(0)" aria-expanded="false">
+          <i class="fas fa-tasks"></i>
+          <span class="nav-text">Book Store Management</span>
+        </a>
+        <ul aria-expanded="false">
+          <% if (permissions.includes('Book Master')) { %>
+          <li><a class="nav-link" href="/admin/book-list">Book List</a></li>
+          <% } %>
+          <% if (permissions.includes('Book Master')) { %>
+          <li><a class="nav-link" href="/admin/book-booking-list">Book Order List</a></li>
+          <% } %>
+        </ul>
+      </li>
+      <% } %>
+     
+
+      <% if (permissions.includes('Test Series Master') || permissions.includes('Exam Master') || permissions.includes('Test Series Booking List')) { %>
+      <li class="has-menu">
+        <a class="has-arrow ai-icon" href="javascript:void(0)" aria-expanded="false">
+          <i class="fas fa-tasks"></i>
+          <span class="nav-text">Test Series Management</span>
+        </a>
+        <ul aria-expanded="false">
+          <% if (permissions.includes('Test Series Master')) { %>
+          <li><a class="nav-link" href="/admin/test-series-list">Test Series List</a></li>
+          <% } %>
+          <% if (permissions.includes('Exam Master')) { %>
+          <li><a class="nav-link" href="/admin/exam-list">Exam List</a></li>
+          <% } %>
+            <% if (permissions.includes('Test Series Booking List')) { %>
+          <li><a class="nav-link" href="/admin/test-series-booking-list">Test Series Booking</a></li>
+          <% } %>
+        </ul>
+      </li>
+      <% } %>
+
+      <% if (permissions.includes('Live Test Master')) { %>
+      <li class="nav-item">
+        <a class="nav-link" href="/admin/live-test-list">
+          <i class="fas fa-video menu-icon"></i>
+          <span class="menu-title">Live Test Management</span>
+        </a>
+      </li>
+      <% } %>
+
+      <% if (
+        permissions.includes('Role Master') ||
+        permissions.includes('Banner Master') ||
+        permissions.includes('Category Master') ||
+        permissions.includes('CMS Master') ||
+         permissions.includes('User Master') ||
+        permissions.includes('Blog Master') ||
+        permissions.includes('FAQ Master')
+      ) { %>
+      <li class="has-menu">
+        <a class="has-arrow ai-icon" href="javascript:void(0)" aria-expanded="false">
+          <i class="fas fa-cog"></i>
+          <span class="nav-text">Setting</span>
+        </a>
+        <ul aria-expanded="false">
+          <% if (permissions.includes('Role Master')) { %>
+          <li><a class="nav-link" href="/admin/roles-list">Roles Permission List</a></li>
+          <% } %>
+
+           <% if (permissions.includes('User Master')) { %>
+          <li><a class="nav-link" href="/admin/user-list">Support Users List</a></li>
+          <% } %>
+          <% if (permissions.includes('Banner Master')) { %>
+          <li><a class="nav-link" href="/admin/banner-list">Banner List</a></li>
+          <% } %>
+          <% if (permissions.includes('Category Master')) { %>
+          <li><a class="nav-link" href="/admin/category-list">Category List</a></li>
+          <li><a class="nav-link" href="/admin/course-class-list">Class List</a></li>
+          <li><a class="nav-link" href="/admin/program-list">Program List</a></li>
+          <% } %>
+          <% if (permissions.includes('ServiceCity Master')) { %>
+          <li><a class="nav-link" href="/admin/service-city-list">Service City List</a></li>
+          <% } %>
+          <% if (permissions.includes('CMS Master')) { %>
+          <li><a class="nav-link" href="/admin/cms-list">CMS Page List</a></li>
+          <% } %>
+          <% if (permissions.includes('Blog Master')) { %>
+          <li><a class="nav-link" href="/admin/blog-list">Blog List</a></li>
+          <% } %>
+          <% if (permissions.includes('Gallery Master')) { %>
+          <li><a class="nav-link" href="/admin/gallery-list">Gallery List</a></li>
+          <% } %>
+          <% if (permissions.includes('Achievement Master')) { %>
+          <li><a class="nav-link" href="/admin/achievement-list">Achievement List</a></li>
+          <% } %>
+          <% if (permissions.includes('FAQ Master')) { %>
+          <li><a class="nav-link" href="/admin/faq-list">FAQ List</a></li>
+          <% } %>
+          <% if (permissions.includes('Contact Setting Master')) { %>
+          <li><a class="nav-link" href="/admin/setting/contact-setting">Contact Setting</a></li>
+          <% } %>
+          <!-- <% if (permissions.includes('Faculty Training Requests List')) { %>
+          <li><a class="nav-link" href="/admin/faculty-training-request-list">Faculty Training Requests</a></li>
+          <% } %> -->
+          <!-- <% if (permissions.includes('Boost Program Requests List')) { %>
+          <li><a class="nav-link" href="/admin/boost-program-requests">Boost Program Requests</a></li>
+          <% } %> -->
+        </ul>
+      </li>
+      <% } %>
+
+      
+      <% if (permissions.includes('Center Query List')) { %>
+      <li class="nav-item">
+        <a class="nav-link" href="/admin/center-enquiries-list">
+          <i class="fas fa-question-circle menu-icon"></i>
+          <span class="menu-title">Center Enquiries</span>
+        </a>
+      </li>
+      <% } %>
+
+      <% if (permissions.includes('Website Query List')) { %>
+      <li class="nav-item">
+        <a class="nav-link" href="/admin/contact-enquiries-list">
+          <i class="fas fa-question-circle menu-icon"></i>
+          <span class="menu-title">Website Enquiries</span>
+        </a>
+      </li>
+      <% } %>
+
+
+       <% if (permissions.includes('Career Master')) { %>
+      <!-- <li class="nav-item">
+        <a class="nav-link" href="/admin/career-list">
+          <i class="fas fa-briefcase menu-icon"></i>
+          <span class="menu-title">Career Management</span>
+        </a>
+      </li> -->
+      <li class="nav-item">
+        <a class="nav-link" href="/admin/career-request-list">
+          <i class="fas fa-briefcase menu-icon"></i>
+          <span class="menu-title">Career Request List</span>
+        </a>
+      </li>
+
+       <li class="nav-item">
+        <a class="nav-link" href="/admin/bftp-request-list">
+          <i class="fas fa-briefcase menu-icon"></i>
+          <span class="menu-title">BFTP Request List</span>
+        </a>
+      </li>
+      <% } %>
+
+       <% if (permissions.includes('Boost Program Requests List')) { %>
+      <!-- <li class="nav-item">
+        <a class="nav-link" href="/admin/career-list">
+          <i class="fas fa-briefcase menu-icon"></i>
+          <span class="menu-title">Career Management</span>
+        </a>
+      </li> -->
+      <li class="nav-item">
+        <a class="nav-link" href="/admin/boost-program-requests">
+          <i class="fas fa-briefcase menu-icon"></i>
+          <span class="menu-title">Boost Program Requests</span>
+        </a>
+      </li>
+      <% } %>
+
+      <% if (
+        permissions.includes('Course Booking List') ||
+        permissions.includes('Test Series Booking List') ||
+        permissions.includes('LiveTest Booking List')
+      ) { %>
+      <li class="has-menu">
+        <a class="has-arrow ai-icon" href="javascript:void(0)" aria-expanded="false">
+          <i class="fas fa-calendar-check"></i>
+          <span class="nav-text">Booking</span>
+        </a>
+        <ul aria-expanded="false">
+          <% if (permissions.includes('Course Booking List')) { %>
+          <li><a class="nav-link" href="/admin/course-bookings">Course Booking</a></li>
+          <% } %>
+        
+          <% if (permissions.includes('LiveTest Booking List')) { %>
+          <li><a class="nav-link" href="/admin/live-test-booking-list">Live Test Booking</a></li>
+          <% } %>
+         
+        </ul>
+      </li>
+      <% } %>
+    </ul>
+  </div>
+</div>
