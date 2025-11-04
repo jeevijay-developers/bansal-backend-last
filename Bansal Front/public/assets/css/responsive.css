@@ -1,0 +1,1138 @@
+@media (max-width:1399.98px) {
+    .header-logo {
+        width: 220px;
+    }
+
+    .testimonials-slider .owl-stage-outer {
+        overflow: hidden !important;
+    }
+
+    .testimonials-slider .owl-stage-outer::before {
+        display: none;
+    }
+
+    .hero-main-card {
+        margin: 50px 0;
+        padding: 50px 40px;
+    }
+
+    .ideal-course-section {
+        padding: 60px 0;
+    }
+
+    .learning-material-section.why-choose-section,
+    .learning-material-section {
+        padding: 80px 0;
+    }
+
+    .video-play-button {
+        font-size: 18px;
+        padding: 20px 32px;
+    }
+
+    .category-filter-card {
+        width: calc(33% - 11px);
+    }
+
+    .course-detail-heading {
+        font-size: 32px;
+    }
+
+    .blog-cards .blog-title {
+        font-size: 20px;
+    }
+}
+
+@media (max-width:1199.98px) {
+    .live-test-right-menu {
+        width: 370px;
+        min-width: 370px;
+    }
+
+    .top-results-card {
+        padding: 0;
+    }
+
+    .center-header-list {
+        gap: 20px;
+    }
+
+    .center-header-list .nav-link {
+        font-size: 14px;
+    }
+
+    .center-header-list .dropdown .dropdown-item {
+        font-size: 14px !important;
+    }
+
+    .hero-main-card {
+        padding: 40px 30px;
+    }
+
+    .hero-heading {
+        font-size: 28px;
+        margin-bottom: 30px;
+    }
+
+    .hero-badge-text {
+        font-size: 12px;
+        padding: 4px 8px;
+        margin-bottom: 30px;
+    }
+
+    .hero-btn-group .btn {
+        font-size: 14px;
+        padding: 10px 20px;
+    }
+
+    .hero-btn-group .btn i {
+        margin-left: 6px;
+    }
+
+    .hero-btn-group,
+    .my-course-links-list {
+        gap: 10px;
+    }
+
+    .heading,
+    .contact-form-heading {
+        font-size: 22px;
+    }
+
+    .ideal-course-card::before {
+        width: 140px;
+        height: 140px;
+    }
+
+    .ideal-course-img {
+        width: 100px;
+    }
+
+    .ideal-course-card {
+        min-height: 180px;
+    }
+
+    .learning-material-section.why-choose-section,
+    .learning-material-section,
+    .city-center-section,
+    .app-section {
+        padding: 60px 0;
+    }
+
+    .learning-material-title,
+    .course-cart-detail-card h4,
+    .book-card .course-price,
+    .test-series-card-title {
+        font-size: 18px;
+    }
+
+    .why-choose-section {
+        padding: 80px 0;
+    }
+
+    .why-choose-heading {
+        font-size: 20px;
+    }
+
+    .why-choose-content,
+    .city-card .city-name,
+    .faq-card .accordion-button,
+    .listing-page-card .listing-card-name,
+    .listing-page-card .course-price,
+    .filter-inputs .form-label,
+    .pay-now-btn.btn,
+    .cd-include-text,
+    .book-title,
+    .book-details-price .book-max-price {
+        font-size: 16px;
+    }
+
+    .btn-primery {
+        font-size: 16px;
+        padding: 10px 20px;
+    }
+
+    .course-listing-section {
+        background-size: 100% auto, 110px;
+        padding: 80px 0;
+    }
+
+    .course-offer-heading {
+        padding: 16px 0;
+        font-size: 16px;
+    }
+
+    .city-center-card {
+        box-shadow: 0px 5px 18px 0px #FFB39D42;
+        border-radius: 20px;
+    }
+
+    .our-video-list li,
+    .book-strip-slide .strip-item {
+        font-size: 14px;
+    }
+
+    .footer-logo {
+        margin-bottom: 60px;
+        max-width: 200px;
+    }
+
+    .course-special-listing li {
+        font-size: 12px;
+    }
+
+    .btn.course-action-btn-white,
+    .btn.course-action-btn-prime,
+    .test-series-card-listing {
+        font-size: 14px;
+    }
+
+    .header-btn {
+        padding: 10px 32px;
+        font-size: 14px;
+    }
+
+    .course-details-right-card {
+        padding: 20px 16px;
+        border-radius: 16px;
+    }
+
+    .details-page-price {
+        font-size: 24px;
+    }
+
+    .cd-include-card {
+        padding: 8px;
+        border-radius: 10px;
+    }
+
+    .faq-card .accordion-button {
+        font-size: 16px !important;
+    }
+
+    .faq-card .accordion .text {
+        font-size: 14px;
+    }
+
+    .header-cart-btn {
+        padding: 6px 12px !important;
+    }
+
+    .checkout-discount-coupon .form-control {
+        font-weight: 400;
+        padding: 8px 12px;
+    }
+
+    .checkout-discount-btn {
+        padding: 10px 36px;
+    }
+
+    .book-card {
+        border-radius: 12px;
+    }
+
+    .book-details-page-links {
+        margin: 20px 0;
+    }
+
+
+    .bdp-top-right-badge {
+        padding: 10px 16px;
+    }
+
+    .bdp-top-badges a {
+        width: 40px;
+        height: 40px;
+        font-size: 16px;
+    }
+
+    .book-details-price .book-offer-price {
+        font-size: 20px;
+    }
+
+    .book-details-price .book-discount-badge {
+        font-size: 14px;
+        padding: 8px 20px;
+    }
+
+    .book-details-page-actions {
+        max-width: 360px;
+    }
+
+    .accordion-button {
+        font-size: 20px !important;
+    }
+
+    .bdb-card {
+        flex-direction: row;
+        align-items: center;
+    }
+
+    .test-series-heading {
+        font-size: 30px;
+        margin-bottom: 30px;
+    }
+
+    .test-series-card {
+        border-radius: 10px;
+        padding: 16px 12px 20px;
+    }
+
+    .test-series-card-top .test-series-card-badge {
+        font-size: 16px;
+        padding: 4px 24px;
+    }
+
+    .test-series-card-top img {
+        width: 80px;
+    }
+
+    .test-serieslist-card h4 {
+        font-size: 16px;
+        margin-bottom: 12px;
+    }
+
+    .secondary-btn {
+        font-size: 14px;
+        padding: 10px 24px;
+        text-wrap: nowrap;
+    }
+
+    .offline-hero-section,
+    .institutes-section {
+        padding: 60px 0;
+    }
+
+    .interactive-material-title {
+        font-size: 16px;
+    }
+
+    .custom-modal .custom-modal-body {
+        min-height: 100%;
+    }
+
+    .dashboard-menu-card {
+        min-width: 240px;
+    }
+
+    .select-subject-link {
+        font-size: 14px;
+        padding: 10px 20px;
+    }
+
+    .course-studyvideo-card {
+        width: calc(50% - 14px);
+    }
+
+    .test-right-menu {
+        min-width: 340px;
+    }
+
+    .test-left-menu-scrolls,
+    .test-left-card-bottom,
+    .livetest-top-header,
+    .questions-card,
+    .live-test-footer {
+        padding-left: 12px;
+        padding-right: 12px;
+    }
+
+    .tresult-heading {
+        font-size: 24px;
+    }
+
+    .rview-heading {
+        font-size: 22px;
+    }
+
+    .result-perans-table {
+        padding: 50px 100px;
+    }
+
+    .checkout-form,
+    .checkout-right-card {
+        padding: 50px 0;
+    }
+}
+
+
+
+@media (max-width:991.98px) {
+    .questions-count .time-period-count {
+        font-size: 12px;
+    }
+
+    .header-prime .navbar-collapse {
+        position: absolute;
+        z-index: -1;
+        top: 100%;
+        left: 0;
+        background: var(--white);
+        width: fit-content;
+        height: 100vh;
+        overflow-y: auto;
+        max-width: 100vw;
+    }
+
+    .navbar-toggler .header-toogle-prime {
+        display: none;
+    }
+
+    .navbar-toggler.collapsed .header-toogle-prime {
+        display: block;
+    }
+
+    .navbar-toggler.collapsed .header-toogle-secondary {
+        display: none;
+    }
+
+    .header-prime .navbar-collapse .fixed-bg-header {
+        content: "";
+        position: fixed;
+        z-index: -1;
+        background: rgb(0 0 0 / 60%);
+        left: 0;
+        top: 0;
+        width: 100vw;
+        height: 100vh;
+
+    }
+
+    .dashboard-lout-drop {
+        position: absolute !important;
+        left: auto !important;
+        right: 0 !important;
+    }
+
+    .header-prime .navbar-collapse .navbar-nav.center-header-list {
+        background: var(--white);
+        height: 100%;
+        box-shadow: 0 0 10px 0 #000000;
+        width: fit-content;
+        min-width: 360px;
+        padding: 20px;
+        gap: 20px;
+        position: relative;
+        z-index: 9;
+    }
+
+    .header-prime .navbar-collapse .navbar-nav.center-header-list .dropdown-menu {
+        border: none !important;
+    }
+
+    .hero-main-card {
+        margin: 50px 0 0;
+    }
+
+    .ideal-course-card {
+        min-height: 150px;
+    }
+
+    .learning-material-card {
+        border-radius: 16px;
+        padding: 14px 12px;
+    }
+
+    .course-listing-section {
+        background-image: url(../img/why-choose-bg-2.png);
+    }
+
+    .testimonial-content,
+    .footer-link,
+    .footer-link-address,
+    .footer-right-link,
+    .book-details-page-links {
+        font-size: 14px;
+    }
+
+    .learning-material-title {
+        font-size: 16px;
+    }
+
+    .footer-heading,
+    .ideal-course-title,
+    .details-page-price {
+        font-size: 18px;
+    }
+
+    .course-detail-heading {
+        font-size: 24px;
+    }
+
+    .footer-logo {
+        margin-bottom: 30px;
+        max-width: 150px;
+    }
+
+    .footer-links-nav {
+        gap: 12px;
+    }
+
+    .footer-follow-heading {
+        font-size: 14px;
+        margin-bottom: 8px;
+    }
+
+    .listing-filter-btn {
+        padding: 8px 16px;
+    }
+
+    .category-filter-card {
+        width: calc(50% - 11px);
+    }
+
+    .details-top-badge .corse-cate-badge {
+        padding: 0 10px 0 12px;
+    }
+
+    .course-cart-detail-card table {
+        margin-bottom: 0;
+    }
+
+    .bdb-card {
+        flex-direction: column;
+        align-items: start;
+    }
+
+    .test-series-heading {
+        font-size: 22px;
+    }
+
+    .test-series-search-card .form-control {
+        padding: 10px 32px 10px 15px;
+    }
+
+    .testseries-details-page .corse-cate-badge {
+        padding: 0 40px 0 10px;
+    }
+
+    .testseries-details-page {
+        .testseries-details-heading img {
+            display: block;
+            margin-bottom: 20px;
+        }
+    }
+
+    .course-cart-detail-card table tr th {
+        border-bottom: none;
+    }
+
+    .checkout-right-card .cart-items-listing .cart-item {
+        flex-direction: column;
+    }
+
+    .video-play-button {
+        font-size: 12px;
+        padding: 10px 20px;
+    }
+
+    .gallery-image-4 {
+        aspect-ratio: 4/5;
+    }
+
+    .dashboard-left-profile-card img {
+        width: 80px;
+        height: 80px;
+    }
+
+    .dashboard-right-card,
+    .dashboard-left-profile-card {
+        gap: 20px;
+    }
+
+    .dashboard-profile-align .btn-profile-update {
+        width: 22px;
+        height: 22px;
+        font-size: 12px;
+    }
+
+    .dashboard-left-profile-card h4 {
+        font-size: 18px;
+        margin-bottom: 6px;
+    }
+
+    .dashboard-white-btn {
+        padding: 8px 24px;
+    }
+
+    .dashboard-card {
+        margin-bottom: 40px;
+        flex-direction: column;
+    }
+
+    .dashboard-menu-card {
+        min-width: 100%;
+        max-width: 100%;
+        overflow-x: scroll;
+        scrollbar-width: thin;
+        padding: 0;
+        border-radius: 20px 20px 0 0;
+    }
+
+    .dashboard-menu-list {
+        flex-direction: row;
+        text-wrap: nowrap;
+        padding: 16px 0;
+        gap: 10px;
+    }
+
+    .course-study-tab .nav-item .nav-link {
+        font-size: 14px;
+        padding: 10px 18px;
+    }
+
+    .course-study-pdf-card {
+        width: 100%;
+    }
+
+    .header-prime .navbar-collapse .navbar-nav.center-header-list {
+        max-height: calc(100vh - 74px);
+        overflow-y: scroll;
+        scrollbar-width: none;
+    }
+
+    .livetest-top-header p {
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--dark);
+        margin: 0;
+    }
+
+    .question-heading {
+        font-size: 18px;
+    }
+
+    .tresult-top-cards {
+        gap: 16px;
+    }
+
+    .tresult-top-card-first {
+        width: 70%;
+    }
+
+    .tresult-top-card-last {
+        width: auto;
+        align-items: center;
+        flex-direction: column;
+    }
+
+    .result-perans-table {
+        padding: 40px;
+        gap: 24px;
+    }
+
+    .testseries-details-page {
+        .course-details-context-listing li {
+            font-size: 14px;
+        }
+    }
+
+    .course-details-context {
+        font-size: 14px;
+    }
+}
+
+@media (min-width:991px) {
+    .live-test-right-menu {
+        display: flex;
+    }
+
+    .live-test-right-menu.active {
+        display: none;
+    }
+}
+
+@media (min-width:768px) and (max-width:991.98px) {
+    .live-test-right-menu {
+        position: absolute;
+        right: 0;
+        top: 0;
+        height: 100%;
+    }
+}
+
+@media (max-width:767.98px) {
+
+    .test-series-price-nav-list {
+        max-height: 600px;
+        overflow-y: scroll;
+    }
+
+    .testseries-details-page .course-details-context-listing li {
+        font-size: 12px;
+    }
+
+    .course-details-context {
+        font-size: 12px;
+    }
+
+    .checkout-page {
+        background: var(--white);
+    }
+
+    .checkout-right-card {
+        background: var(--dark);
+        border-radius: 12px;
+        padding: 12px;
+    }
+
+    .checkout-table .table tr td,
+    .checkout-table .table tr th {
+        font-size: 14px;
+    }
+
+    .city-center-card {
+        border-radius: 16px;
+        padding: 20px;
+    }
+
+    .book-details-accordion .faq-card .accordion-button {
+        font-size: 16px !important;
+    }
+
+    .bdb-card {
+        flex-direction: row;
+        align-items: center;
+    }
+
+    .dashboard-right-card,
+    .dashboard-left-profile-card {
+        width: 100%;
+    }
+
+    .dashboard-right-card .dashboard-white-btn {
+        margin-left: auto;
+    }
+
+    .dashboard-menu-link {
+        padding: 8px 14px;
+        font-size: 14px;
+    }
+
+    .sub-heading {
+        font-size: 18px;
+    }
+
+    .my-course-card-link {
+        min-width: calc(50% - 60px);
+    }
+
+    .course-studyvideo-card {
+        padding: 10px 10px 20px;
+    }
+
+    .pdf-studycard-title {
+        font-size: 16px;
+    }
+
+    .question-action-btn,
+    .text-right-btm-btn {
+        font-size: 16px;
+        padding: 8px 24px;
+    }
+
+    .live-test-right-menu {
+        position: absolute;
+        right: 0;
+        top: 0;
+        left: 0;
+        height: 100%;
+        width: 100%;
+    }
+
+    .side-menu-footer .side-footer-menu-btn {
+        max-width: 320px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .tresult-top-cards {
+        flex-direction: column;
+    }
+
+    .tresult-top-card-first {
+        width: 100%;
+    }
+
+    .tresult-top-card-last {
+        flex-direction: row;
+    }
+
+    .result-perans-table {
+        gap: 20px;
+    }
+
+    .course-heading {
+        font-size: 16px;
+    }
+
+    .result-column-chart div {
+        width: 100% !important;
+        height: 320px !important;
+    }
+
+    .live-test-right-scroll, .questions-card {
+        max-height: calc(100vh - 218px);
+        height: 100%;
+    }
+
+    .total-questions-aligns {
+        width: 100vw;
+    }
+}
+
+@media (max-width: 575.98px) {
+
+    .live-test-right-scroll, .questions-card{
+        height: auto;
+        max-height: 100%;
+        overflow: auto;
+    }
+
+    .total-questions-aligns {
+        padding: 16px;
+        gap: 12px;
+    }
+
+    .checkout-discount-btn {
+        width: fit-content;
+        margin-left: auto;
+    }
+
+    .checkout-discount-coupon {
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .course-card {
+        margin: 30px 0 10px;
+    }
+
+    .course-special-listing {
+        padding: 20px 12px 20px 30px;
+    }
+
+    .city-center-section {
+        background-size: auto 260px;
+    }
+
+    .header-logo {
+        width: 140px;
+    }
+
+    .header-btn {
+        padding: 6px 14px;
+        font-size: 14px;
+        border-radius: 6px;
+    }
+
+    .hero-heading {
+        font-size: 22px;
+        margin-bottom: 20px;
+    }
+
+    .hero-main-card {
+        padding: 30px 20px;
+        border-radius: 10px;
+    }
+
+    .hero-badge-text {
+        font-size: 10px;
+        margin-bottom: 20px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .hero-btn-group .btn {
+        width: 100%;
+    }
+
+    .text {
+        font-size: 14px;
+    }
+
+    .heading,
+    .why-choose-heading,
+    .contact-form-heading {
+        font-size: 18px;
+    }
+
+    .category-filter-card {
+        width: 100%;
+    }
+
+    .course-detail-heading {
+        font-size: 20px;
+        margin-bottom: 20px;
+    }
+
+    .course-subjects-tag {
+        font-size: 14px;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+    }
+
+    .apply-copn-modal .cpncode-title {
+        font-size: 14px;
+    }
+
+    .cd-include-card {
+        box-shadow: 0 0 6px 0 #ccc;
+    }
+
+    .header-prime .navbar-collapse .navbar-nav.center-header-list {
+        max-height: calc(100vh - 66px);
+    }
+
+    .book-details-price .book-discount-badge {
+        font-size: 12px;
+        padding: 6px 18px;
+    }
+
+    .search-input-align,
+    .tslc-footer-align,
+    .my-course-card-top {
+        flex-direction: column;
+    }
+
+    .hero-heading {
+        text-align: center;
+        width: fit-content;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .contactus-form {
+        padding: 20px 12px;
+        border-radius: 12px;
+    }
+
+    .intitutes-gallery-section .row {
+        --bs-gutter-x: 8px !important;
+    }
+
+    .custom-modal .custom-modal-body {
+        padding: 0 0 26px;
+    }
+
+    .login-heading,
+    .dashboard-left-profile-card h4 {
+        font-size: 16px;
+    }
+
+    .login-input-heading,
+    .dashboard-right-card p {
+        font-size: 14px;
+    }
+
+    .login-input-group .login-number-input {
+        padding: 10px 50px 10px 60px !important;
+    }
+
+    .otp-inputs .form-control {
+        width: 46px;
+        height: 46px;
+    }
+
+    .login-verify-btn {
+        padding: 10px 28px;
+    }
+
+    .login-modal-logo {
+        max-width: 150px;
+    }
+
+    .custom-modal .modal-content {
+        border-radius: 10px;
+    }
+
+    .register-details-form .form-control {
+        padding: 10px 12px;
+    }
+
+    .dashboard-left-profile-card img {
+        width: 70px;
+        height: 70px;
+    }
+
+    .dashboard-hero-section {
+        overflow: hidden;
+    }
+
+    .dashboard-right-card,
+    .dashboard-left-profile-card {
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .target-badges-btn {
+        margin-bottom: 10px;
+        padding: 6px 10px;
+    }
+
+    .header-profile-btn img {
+        width: 40px;
+    }
+
+    .dashboard-menu-list {
+        padding: 16px 10px 1px;
+    }
+
+    .dashboard-menu-link {
+        border-radius: 8px 8px 0 0;
+    }
+
+    .dashboard-page-card {
+        padding: 16px 12px 20px;
+    }
+
+    .my-course-card-link {
+        font-size: 12px;
+        padding: 8px 12px;
+        border-radius: 6px;
+    }
+
+    /* .my-course-bottom,
+    .course-study-pdf-card .pdf-studycard-top {
+        flex-direction: column;
+    } */
+
+    .course-studyvideo-card {
+        width: 100%;
+    }
+
+    .pdf-study-view-btn {
+        font-size: 16px;
+        padding: 6px 32px;
+    }
+
+    .test-page-header {
+        padding: 8px 0;
+    }
+
+    .test-page-header .navbar-brand {
+        max-width: 125px;
+        margin: 0 !important;
+        order: 1 !important;
+    }
+
+    .test-page-header h4.text {
+        font-size: 16px;
+        order: 2;
+    }
+
+    .live-test-cards p {
+        font-size: 14px;
+        padding: 10px 14px;
+    }
+
+    .test-left-menu-scrolls {
+        overflow: visible;
+        max-height: 100%;
+    }
+
+    .live-test-footer {
+        gap: 10px;
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .qsec-btns-group {
+        display: flex;
+        gap: 0;
+    }
+
+    .question-action-btn,
+    .text-right-btm-btn {
+        font-size: 14px;
+        padding: 8px 22px;
+        width: 50%;
+        text-wrap: nowrap;
+    }
+
+    .question-heading {
+        font-size: 16px;
+    }
+
+    .questions-ans-submit label.btn {
+        font-size: 14px;
+    }
+
+    .live-test-progress {
+        width: 100%;
+    }
+
+    .live-test-right-menu.active {
+        max-width: 100vw !important;
+        left: 0;
+    }
+
+    .side-menu-footer {
+        padding: 10px 20px;
+    }
+
+    .live-test-header {
+        gap: 6px;
+    }
+
+    .tslc-footer-align {
+        align-items: start;
+    }
+
+    .result-column-chart div {
+        width: 100% !important;
+        height: 100% !important;
+    }
+
+    .tresult-tcard {
+        padding: 32px 6px;
+        gap: 10px;
+    }
+
+    .tresult-top-card-last {
+        width: auto;
+        align-items: center;
+        flex-direction: column;
+    }
+
+    .result-chart-lables2 {
+        gap: 12px;
+    }
+
+    .result-perans-table {
+        padding: 20px;
+        gap: 12px;
+        border-radius: 12px;
+    }
+
+    .rview-text {
+        font-size: 14px;
+    }
+
+    .result-perans-table .result-ans-btn {
+        font-size: 12px;
+        width: 54px;
+        height: 40px;
+        border-radius: 8px;
+    }
+
+    .suggest-city-list .search-city-suggest {
+        width: 100%;
+    }
+
+    .buy-btns-details-mover .cart-action-btn {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        z-index: 9;
+        padding: 12px 18px;
+        background: var(--white);
+        box-shadow: 0 0 6px 0 #000;
+    }
+
+    .buy-btns-details-mover .cart-action-btn .pay-now-btn {
+        margin: 0;
+    }
+}

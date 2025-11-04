@@ -1,0 +1,8 @@
+.slick-slide {
+    /* margin-right: 10px; */
+    padding:10px; 
+}
+.slick-track {
+    margin-left: 0 !important;
+    margin-right: auto !important;
+}

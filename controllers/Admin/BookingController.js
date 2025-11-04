@@ -461,7 +461,7 @@ static async boostProgramRequestList(req, res) {
     const programs = [];
 
     return res.render("admin/booking/boost-program-request-list", {
-      title: "Boost Program Request List",
+      title: "Boost Program Request",
       request_data: rows,
       programs,
       req,

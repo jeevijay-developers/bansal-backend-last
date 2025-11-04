@@ -1,0 +1,384 @@
+.about-page-body {
+    .about-page-hero {
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        padding: 400px 0 20px;
+    }
+
+    .about-second-content .heading-small {
+        font-size: 30px;
+    }
+
+    .about-card-img {
+        border-radius: 30px;
+    }
+
+    .text30 {
+        font-size: 30px;
+    }
+
+    .specifics-section,
+    .team-members-section {
+        padding: 60px 0;
+        background: #F5F5FF;
+    }
+
+    .specifics-section-card {
+        background: var(--white);
+        padding: 24px 16px;
+        border-radius: 10px;
+        height: 100%;
+        box-shadow: 0px 2px 8px 0px #8E8ED766;
+    }
+
+    .specifics-card-icon {
+        width: 50px;
+        margin: 0 auto 20px;
+    }
+
+    .specifics-card-title {
+        font-size: 22px;
+        font-weight: 600;
+        color: var(--primery);
+        margin-bottom: 8px;
+    }
+
+    .team-members-card {
+        background: var(--white);
+        border-radius: 20px;
+        padding: 32px 24px;
+        margin-bottom: 10px;
+        box-shadow: 0 8px 0 0 #9BA1DE;
+    }
+
+    .team-members-image {
+        overflow: hidden;
+        width: 240px;
+        border-radius: 20px;
+        margin: 0 auto 20px;
+        height: 240px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .team-member-name {
+        font-size: 22px;
+        font-weight: 600;
+        color: var(--primery);
+        margin-bottom: 8px;
+    }
+
+    .team-member-content {
+        position: relative;
+    }
+
+    .team-member-content .about-pera {
+        text-align: center;
+        color: var(--text);
+        overflow: hidden;
+        display: -webkit-box;
+        -webkit-line-clamp: 6;
+        -webkit-box-orient: vertical;
+    }
+
+    .read-more-btn {
+        position: absolute;
+        left: 50%;
+        background: var(--white);
+        bottom: 0;
+        transform: translate(-50%, 100%);
+    }
+
+    .read-more-btn .service-about-more {
+        padding: 0;
+        font-size: initial;
+        font-weight: normal;
+        border: none !important;
+        text-decoration: underline;
+    }
+
+    .about-pera.active {
+        -webkit-line-clamp: none;
+    }
+
+    .our-goals-section {
+        background-position: bottom center;
+        background-size: cover;
+        background-repeat: no-repeat;
+        padding: 60px 0 40px;
+    }
+
+    .our-goals-card {
+        height: 100%;
+        display: flex;
+        align-items: normal;
+        gap: 24px;
+        background: var(--white);
+        box-shadow: 0px 0px 10px 0px #6156AE4D;
+        border-radius: 20px;
+        overflow: hidden;
+    }
+
+    .our-goals-img {
+        max-height: 260px;
+        width: auto;
+        object-fit: cover;
+    }
+
+    .our-goals-content {
+        padding: 16px 16px 16px 0;
+    }
+
+    .our-golas-herading {
+        font-size: 22px;
+        font-weight: 600;
+        color: var(--black);
+        margin-bottom: 8px;
+    }
+
+    .our-mission-section {
+        background-size: 50%, 50%, 100%;
+        background-repeat: no-repeat;
+        background-position: center left, center right;
+        padding: 60px 0;
+    }
+
+    .our-mission-card {
+        background: rgb(255 255 255 / 25%);
+        box-shadow: 0px -1px 24px 0px #00000040;
+        border-radius: 20px;
+        padding: 20px;
+        height: 100%;
+    }
+
+    .our-mission-card-icon {
+        width: 50px;
+        margin-bottom: 16px;
+    }
+
+    .text-primery {
+        color: var(--primery);
+    }
+
+    .mission-card-heading {
+        font-size: 26px;
+        font-weight: 600;
+        color: var(--primery);
+        margin-bottom: 16px;
+    }
+
+    .our-mission-card-content .text {
+        font-size: 20px;
+    }
+
+    .partners-section {
+        background: #F2F7FF;
+        padding: 60px 0;
+    }
+
+    .partners-cards {
+        display: flex;
+        align-items: center;
+        gap: 50px;
+        overflow-x: scroll;
+        width: 100%;
+        scrollbar-width: none;
+    }
+
+    .partner-card {
+        min-width: calc(15% - 25px);
+        background: var(--white);
+        border-radius: 20px;
+        padding: 20px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .partner-card img {
+        object-fit: contain;
+        aspect-ratio: 1 / 1;
+    }
+}
+
+@media (max-width:1399.98px) {
+    .about-page-body {
+        .our-mission-section {
+            background: linear-gradient(90deg, var(--primery) 50%, var(--secondary) 50%) !important;
+        }
+
+        .our-goals-card {
+            gap: 0;
+            flex-direction: column;
+        }
+
+        .our-goals-content {
+            padding: 16px;
+        }
+
+        .team-members-image {
+            width: 170px;
+            height: 170px;
+        }
+
+        .team-member-name {
+            font-size: 18px;
+            margin-bottom: 0;
+        }
+
+        .team-members-card {
+            padding: 32px 16px;
+        }
+
+        .our-mission-card-content .text {
+            font-size: 18px;
+        }
+
+        .about-page-hero {
+            padding: 300px 0 20px;
+        }
+    }
+}
+
+@media (max-width:1199.98px) {
+    .about-page-body {
+        .about-page-hero {
+            padding: 240px 0 20px;
+        }
+
+        .specifics-card-title {
+            font-size: 20px;
+        }
+
+        .partner-card {
+            min-width: calc(18% - 25px);
+        }
+    }
+}
+
+@media (max-width:991.98px) {
+    .about-page-body {
+
+
+        .about-page-hero {
+            padding: 100px 0;
+        }
+
+        .about-second-content .heading-small {
+            font-size: 24px;
+        }
+
+        .mission-card-heading {
+            font-size: 20px;
+        }
+
+        .our-mission-card-content .text {
+            font-size: 16px;
+        }
+
+        .our-mission-card-icon {
+            width: 30px;
+            margin-bottom: 16px;
+        }
+
+        .about-content-card::after {
+            width: calc(100% + 20px);
+        }
+
+        .partner-card {
+            border-radius: 12px;
+            padding: 10px;
+        }
+    }
+}
+
+@media (max-width:767.98px) {
+    .about-page-body {
+        .our-mission-section {
+            background: #dce1ff !important;
+        }
+
+        .our-mission-card {
+            background: rgb(255 255 255);
+        }
+
+        .mission-card-heading,
+        .our-mission-card-content .text {
+            color: var(--dark) !important;
+        }
+
+        .our-mission-ico img {
+            filter: invert(0.8);
+        }
+
+        .about-page-hero {
+            padding: 60px 0;
+        }
+
+        .about-content-card::after {
+            display: none;
+        }
+
+        .about-inner-card {
+            padding: 30px;
+        }
+
+        .why-choose-btm-title {
+            font-size: var(--font18);
+        }
+
+        .wcu-btm-left-card p {
+            font-size: var(--font20);
+            padding: 10px;
+        }
+
+        .wcu-btm-left-card h4 {
+            font-size: var(--font20);
+            padding: 10px 20px;
+        }
+
+        .wcu-btm-right-card p {
+            font-size: var(--font16);
+        }
+
+        .wcu-btm-right-card h4 {
+            font-size: var(--font14);
+            margin-bottom: 0;
+        }
+
+        .about-second-content {
+            text-align: center;
+        }
+
+        .partner-card {
+            min-width: calc(25% - 20px)
+        }
+    }
+}
+
+@media (max-width:575.98px) {
+    .about-page-body {
+        .count-card p {
+            font-weight: 500;
+        }
+
+        .about-inner-card .text {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: -webkit-box;
+            -webkit-line-clamp: 10;
+            /* number of lines to show */
+            -webkit-box-orient: vertical;
+        }
+
+        .why-choose-section .sub-heading {
+            text-align: center;
+        }
+    }
+
+    .why-sm-cont {
+        font-size: 14px !important;
+    }
+}

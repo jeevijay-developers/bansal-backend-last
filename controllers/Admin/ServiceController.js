@@ -17,7 +17,7 @@ const List = async (req, res) => {
         : "WHERE services.deleted_at IS NULL";
 
     const page_name =
-      req.query.status === "trashed" ? "Trashed Service List" : "Service List";
+      req.query.status === "trashed" ? "Trashed Service List" : "Service Listing";
 
     // Define the SQL query to fetch services
     const query = `

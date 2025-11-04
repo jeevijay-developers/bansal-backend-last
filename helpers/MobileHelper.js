@@ -7,6 +7,53 @@ function formatDate(dateString) {
   return format(date, "MM/dd/yyyy hh:mm a");
 }
 
+// async function getActiveTestSeries(filters = {}) {
+//   try {
+//     let query = `
+//       SELECT
+//         ts.*,
+//         c.category_name
+//       FROM
+//         test_series ts
+//       JOIN
+//         categories c ON ts.category_id = c.id
+//       WHERE
+//         ts.status = 1
+//         AND ts.deleted_at IS NULL
+//     `;
+
+//     const params = [];
+
+//     // ✅ Filter by category_id if provided
+//     if (filters.category_id) {
+//       query += ` AND ts.category_id = ?`;
+//       params.push(filters.category_id);
+//     }
+
+//     if (filters.course_type) {
+//       query += ` AND ts.type = ?`;
+//       params.push(filters.course_type);
+//     }
+
+//     // ✅ Sorting by price or serial number
+//     if (filters.price_range === "low-to-high") {
+//       query += ` ORDER BY COALESCE(ts.offer_price) ASC, ts.name ASC`;
+//     } else if (filters.price_range === "high-to-low") {
+//       query += ` ORDER BY COALESCE(ts.offer_price) DESC, ts.name ASC`;
+//     } else {
+//       query += ` ORDER BY ts.name ASC`;
+//     }
+
+//     // ✅ Execute after full query built
+//     const [rows] = await pool.promise().execute(query, params);
+
+//     return rows;
+//   } catch (error) {
+//     console.error("Error fetching active test series with category:", error);
+//     throw error;
+//   }
+// }
+
 async function getActiveTestSeries(filters = {}, userId) {
   try {
     let query = `

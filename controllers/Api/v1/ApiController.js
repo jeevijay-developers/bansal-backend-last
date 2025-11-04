@@ -6841,9 +6841,9 @@ boostProgramDetails: async (req, res) => {
     const [rows] = await pool.promise().query(
       `SELECT title, program_date, price, status 
        FROM programs
-       WHERE id = 1
+       WHERE type = 'boost'
        ORDER BY program_date ASC
-       LIMIT 1`
+       `
     );
 
     res.status(200).json({

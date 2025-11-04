@@ -7,6 +7,18 @@ function formatDate(dateString) {
   return format(date, "MM/dd/yyyy hh:mm a");
 }
 
+// Fetch active categories by type with optional selected columns
+// async function getActiveCategoriesByType(type = "course", columns = []) {
+//   try {
+//     const selectFields = columns.length > 0 ? columns.join(", ") : "*";
+//     const query = `SELECT ${selectFields} FROM categories WHERE status = 1 AND deleted_at IS NULL AND category_type = ?`;
+//     const [rows] = await pool.promise().execute(query, [type]);
+//     return rows;
+//   } catch (error) {
+//     console.error("Error fetching active categories by type:", error);
+//     throw error;
+//   }
+// }
 
 async function getActiveCategoriesByType(type = "course", columns = []) {
   try {

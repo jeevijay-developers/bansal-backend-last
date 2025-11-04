@@ -9,7 +9,7 @@
             <h3 class="card-title-2">
               <% let activeType = req.params.course_type; %>
               <!-- Course Filter Buttons -->
-              <a href="/admin/course-list/all" class="btn <%= activeType === 'all' ? 'btn-primary' : 'btn-default' %> mr-2">All Course</a>
+              <a href="/admin/course-list/all" class="btn <%= activeType === 'all' ? 'btn-primary' : 'btn-default' %> mr-2">All Courses</a>
               <a href="/admin/course-list/active" class="btn <%= activeType === 'active' ? 'btn-primary' : 'btn-default' %> mr-2">Active Course</a>
               <a href="/admin/course-list/inactive" class="btn <%= activeType === 'inactive' ? 'btn-primary' : 'btn-default' %> mr-2">Inactive Course</a>
               <a href="/admin/course-list/paid" class="btn <%= activeType === 'paid' ? 'btn-primary' : 'btn-default' %> mr-2">Paid Course</a>

@@ -1,0 +1,12 @@
+  
+.react-multi-carousel-list{overflow: initial;}
+.react-multiple-carousel__arrow {
+    background-color: black !important;
+    box-shadow: 0 10px 10px rgba(0, 0, 0, 0.3) !important; /* Adds shadow effect */
+    transition: all 0.3s ease-in-out;
+  }
+  
+  .react-multiple-carousel__arrow:hover {
+    background-color: #333 !important; /* Darker shade on hover */
+    box-shadow: 0 10px 15px rgba(0, 0, 0, 0.4) !important;
+  }

@@ -813,15 +813,15 @@ const Update = async (req, res) => {
 
       if (duplicateCheck.length > 0) {
         duplicateCheck.forEach((row) => {
-          if (row.email === email) errors.email = ["Email already exists"];
-          if (row.mobile === mobile) errors.mobile = ["Mobile already exists"];
+          //if (row.email === email) errors.email = ["Email already exists"];
+          //if (row.mobile === mobile) errors.mobile = ["Mobile already exists"];
         });
 
-        return res.status(409).json({
-          success: false,
-          errors,
-          message: Object.values(errors)[0][0]
-        });
+        // return res.status(409).json({
+        //   success: false,
+        //   errors,
+        //   message: Object.values(errors)[0][0]
+        // });
       }
     }
 
