@@ -1,5 +1,51 @@
 <%- include('../layouts/header') %>
 
+<style>
+  .form-label {
+    font-weight: 600;
+    margin-bottom: 5px;
+  }
+  
+  .filter-tab {
+    margin-bottom: 15px;
+  }
+  
+  .table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .table {
+    min-width: 1000px;
+    white-space: nowrap;
+  }
+  
+  .table th,
+  .table td {
+    padding: 12px 8px;
+    vertical-align: middle;
+  }
+  
+  .table tbody tr:nth-of-type(odd) {
+    background-color: #f8f9fa;
+  }
+  
+  .table tbody tr:nth-of-type(even) {
+    background-color: #ffffff;
+  }
+  
+  .table-hover tbody tr:hover {
+    background-color: #e9ecef !important;
+  }
+  
+  .badge {
+    font-size: 11px;
+    padding: 5px 10px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+</style>
+
 <section class="content-body">
   <div class="container-fluid">
     <div class="row">
@@ -23,17 +69,17 @@
           <div class="card-body">
            <div class="row align-items-end g-2 mb-3 filter-tab">
   <div class="col-md-2">
-    <label>From</label>
+    <label class="form-label">From</label>
     <input type="date" id="from_date" class="form-control" value="<%= req.query.from_date || '' %>">
   </div>
   <div class="col-md-2">
-    <label>To</label>
+    <label class="form-label">To</label>
     <input type="date" id="to_date" class="form-control" value="<%= req.query.to_date || '' %>">
   </div>
  
   <div class="col-md-3">
-  <label>Program</label>
-  <select id="center_id" class="form-control">
+  <label class="form-label">Center</label>
+  <select id="center_id" class="form-select">
     <option value="">-- All Center --</option>
     <% if (centers && centers.length > 0) { %>
       <% centers.forEach((p) => { %>
@@ -45,15 +91,13 @@
   </select>
 </div>
 
-  </br>
-
-  <div class="col-md-2  text-center">
+  <div class="col-md-3 text-center">
     <button id="filterBtn" class="btn btn-primary me-2">Filter</button>
     <a href="<%= center_enquiries_list %>" class="btn btn-secondary">Reset</a>
   </div>
 </div>
             <div class="table-responsive">
-              <table id="example3" class="display table-responsive-lg">
+              <table id="example3" class="display table table-striped table-hover">
                 <thead>
     <tr>
       <th>ID</th>

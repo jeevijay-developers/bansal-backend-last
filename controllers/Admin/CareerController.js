@@ -275,8 +275,30 @@ const careerRequestList = async (req, res) => {
   try {
     const { from_date, to_date, position } = req.query;
 
+    // Get current user's role_id and name
+    const userRoleId = parseInt(req.user?.role_id) || 0;
+    const userRoles = req.roles || req.session.userRole || [];
+    const isSuperAdmin = userRoles.includes('Super Admin') || userRoleId === 1;
+    const isHRTeam = userRoleId === 9;
+    const userName = req.user?.name || req.session?.userName || '';
+
+    // Check if user can see all data (Super Admin or HR Team)
+    const canSeeAllData = isSuperAdmin || isHRTeam;
+
     let query = `SELECT * FROM career_requests WHERE 1=1`;
     const values = [];
+
+    // Apply filters for non-Super Admin and non-HR users
+    if (!canSeeAllData) {
+      // Filter by preferred locations
+      if (userName) {
+        query += ` AND (preferred_location1 = ? OR preferred_location2 = ? OR preferred_location3 = ?)`;
+        values.push(userName, userName, userName);
+      }
+      
+      // ADDITIONALLY filter by non-academic position only
+      query += ` AND position = 'non-academic'`;
+    }
 
     if (from_date) {
       query += ` AND DATE(created_at) >= ?`;
@@ -288,7 +310,8 @@ const careerRequestList = async (req, res) => {
       values.push(to_date);
     }
 
-    if (position) {
+    // Only apply position filter if user can see all data
+    if (canSeeAllData && position) {
       query += ` AND position = ?`;
       values.push(position);
     }
@@ -305,6 +328,7 @@ const careerRequestList = async (req, res) => {
       title: "Career Requests List",
       request_data: rows,
       programs,
+      canSeeAllData, // Pass this to view to control filter visibility
       req,
     });
 
@@ -340,6 +364,15 @@ const careerRequestList = async (req, res) => {
 
 const bftpRequestList = async (req, res) => {
   try {
+    // Check if user is Super Admin
+    const userRoles = req.roles || req.session.userRole || [];
+    const isSuperAdmin = userRoles.includes('Super Admin');
+    
+    if (!isSuperAdmin) {
+      req.flash("error", "Access denied. Only Super Admin can view BFTP requests.");
+      return res.redirect("/admin/dashboard");
+    }
+
     const { from_date, to_date, division } = req.query;
 
     let query = `SELECT * FROM bftp_careers WHERE 1=1`;
@@ -372,6 +405,7 @@ const bftpRequestList = async (req, res) => {
       title: "BFTP Requests List",
       request_data: rows,
      // programs,
+      permissions: req.permissions || res.locals.permissions || [],
       req,
     });
 
@@ -381,10 +415,148 @@ const bftpRequestList = async (req, res) => {
   }
 };
 
+const bftpRequestListExport = async (req, res) => {
+  try {
+    // Check if user is Super Admin
+    const userRoles = req.roles || req.session.userRole || [];
+    const isSuperAdmin = userRoles.includes('Super Admin');
+    
+    if (!isSuperAdmin) {
+      req.flash("error", "Access denied. Only Super Admin can export BFTP requests.");
+      return res.redirect("/admin/dashboard");
+    }
+
+    const { from_date, to_date, division } = req.query;
+
+    let query = `SELECT * FROM bftp_careers WHERE 1=1`;
+    const values = [];
+
+    if (from_date) {
+      query += ` AND DATE(created_at) >= ?`;
+      values.push(from_date);
+    }
+
+    if (to_date) {
+      query += ` AND DATE(created_at) <= ?`;
+      values.push(to_date);
+    }
+
+    if (division) {
+      query += ` AND division = ?`;
+      values.push(division);
+    }
+
+    query += ` ORDER BY created_at DESC`;
+
+    const [rows] = await pool.promise().execute(query, values);
+
+    // Create CSV content with all detailed fields
+    const headers = [
+      'Name',
+      'Mobile',
+      'Email',
+      'Date of Birth',
+      'Father Name',
+      'Qualification',
+      'Marital Status',
+      'Division',
+      'Test Date',
+      'IITian',
+      'Bansallite',
+      'Subject',
+      'Address',
+      'City',
+      'State',
+      'Pin Code',
+      'Agree Terms',
+      'Created At'
+    ];
+    let csv = headers.join(',') + '\n';
+
+    rows.forEach(row => {
+      // Format dates
+      const birthday = row.birthday 
+        ? new Date(row.birthday).toLocaleString('en-GB', { 
+            day: '2-digit', 
+            month: '2-digit', 
+            year: 'numeric', 
+            hour: '2-digit', 
+            minute: '2-digit', 
+            hour12: true 
+          })
+        : '-';
+
+      const testDate = row.testDate 
+        ? new Date(row.testDate).toLocaleString('en-GB', { 
+            day: '2-digit', 
+            month: '2-digit', 
+            year: 'numeric', 
+            hour: '2-digit', 
+            minute: '2-digit', 
+            hour12: true 
+          })
+        : '-';
+
+      const createdAt = row.created_at 
+        ? new Date(row.created_at).toLocaleString('en-GB', { 
+            day: '2-digit', 
+            month: '2-digit', 
+            year: 'numeric', 
+            hour: '2-digit', 
+            minute: '2-digit', 
+            hour12: true 
+          })
+        : '-';
+
+      const rowData = [
+        `"${(row.name || 'N/A').replace(/"/g, '""')}"`,
+        `"${row.mobile || 'N/A'}"`,
+        `"${(row.email || 'N/A').replace(/"/g, '""')}"`,
+        `"${birthday}"`,
+        `"${(row.fatherName || 'N/A').replace(/"/g, '""')}"`,
+        `"${(row.qualification || 'N/A').replace(/"/g, '""')}"`,
+        `"${(row.maritalStatus || 'N/A').replace(/"/g, '""')}"`,
+        `"${(row.division || 'N/A').replace(/"/g, '""')}"`,
+        `"${testDate}"`,
+        `"${row.iitian ? 'Yes' : 'No'}"`,
+        `"${row.bansallite ? 'Yes' : 'No'}"`,
+        `"${(row.subject || 'N/A').replace(/"/g, '""')}"`,
+        `"${(row.address || 'N/A').replace(/"/g, '""')}"`,
+        `"${(row.city || 'N/A').replace(/"/g, '""')}"`,
+        `"${(row.state || 'N/A').replace(/"/g, '""')}"`,
+        `"${row.pincode || 'N/A'}"`,
+        `"${row.agree ? 'Yes' : 'No'}"`,
+        `"${createdAt}"`
+      ];
+      csv += rowData.join(',') + '\n';
+    });
+
+    // Set headers for CSV download
+    const filename = `bftp-requests-detailed-${new Date().toISOString().split('T')[0]}.csv`;
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    
+    return res.send(csv);
+
+  } catch (error) {
+    console.error("Error exporting career requests:", error);
+    return res.status(500).send("Internal Server Error");
+  }
+};
+
 
    const bftpRequestDetails = async (req, res) => {
   const { id } = req.params;
   try {
+    // Check if user is Super Admin
+    const userRoles = req.roles || req.session.userRole || [];
+    const isSuperAdmin = userRoles.includes('Super Admin');
+    
+    if (!isSuperAdmin) {
+      req.flash("error", "Access denied. Only Super Admin can view BFTP request details.");
+      return res.redirect("/admin/dashboard");
+    }
+
     const [requestData] = await pool.promise().query(
       `SELECT * FROM bftp_careers WHERE id = ?`,
       [id]
@@ -415,5 +587,6 @@ module.exports = {
   careerRequestDetails,
   careerRequestList,
   bftpRequestDetails,
-  bftpRequestList
+  bftpRequestList,
+  bftpRequestListExport
 };

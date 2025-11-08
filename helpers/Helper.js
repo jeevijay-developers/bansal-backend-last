@@ -1542,6 +1542,9 @@ module.exports = {
   getMyBooksOrders,
   getActiveBooks,
   getFacultiesByCourseId,
-  getAppCenterCourses
+  getAppCenterCourses,
+  // Aliases for convenience
+  getActiveCategories: getActiveCategoriesByType,
+  getActiveClasses: getActiveCourseClasses
   
 };

@@ -123,13 +123,20 @@ const Update = async (req, res) => {
   const id = req.params.postId;
   const isInsert = !id || id === "0" || id === "null";
 
-  const { title, program_date, price, status = 1 } = req.body;
+  const { title, type, program_date, price, status = 1 } = req.body;
 
   // ✅ Basic validation
   if (!title || !title.trim()) {
     return res.status(422).json({
       success: false,
       message: "Title is required",
+    });
+  }
+
+  if (!type || !['boost', 'bftp'].includes(type)) {
+    return res.status(422).json({
+      success: false,
+      message: "Valid program type is required (boost or bftp)",
     });
   }
 
@@ -140,10 +147,10 @@ const Update = async (req, res) => {
     });
   }
 
-  if (isInsert && (price === undefined || price === null || isNaN(price))) {
+  if (price === undefined || price === null || isNaN(price)) {
     return res.status(422).json({
       success: false,
-      message: "Price is required for insert",
+      message: "Price is required",
     });
   }
 
@@ -153,6 +160,7 @@ const Update = async (req, res) => {
   const slug = slugify(title.trim(), { lower: true, strict: true });
   const data = {
     title: title.trim(),
+    type: type,
     slug,
     program_date,
     price: finalPrice,
@@ -206,16 +214,42 @@ const Show = async (req, res) => {
 
 const Delete = async (req, res) => {
   try {
-    await Helper.handleTableAction({
-      req,
-      res,
-      action: "soft-delete",
-      table_name,
-      redirectUrl: `${actions_url}-list`,
-      title: module_name,
+    const postId = req.params.postId;
+
+    if (!postId) {
+      return res.status(400).json({
+        success: false,
+        message: "Program ID is required",
+      });
+    }
+
+    // Check if program exists
+    const [program] = await runQuery(`SELECT * FROM ${table_name} WHERE id = ?`, [postId]);
+    
+    if (!program) {
+      return res.status(404).json({
+        success: false,
+        message: `${module_name} not found`,
+      });
+    }
+
+    // Soft delete - set deleted_at timestamp
+    await runQuery(
+      `UPDATE ${table_name} SET deleted_at = NOW() WHERE id = ?`,
+      [postId]
+    );
+
+    return res.json({
+      success: true,
+      message: `${module_name} deleted successfully`,
     });
   } catch (error) {
-    handleError(res, error, "Delete");
+    console.error(`Error in Delete:`, error);
+    return res.status(500).json({
+      success: false,
+      message: "Server error while deleting program",
+      error: error.message,
+    });
   }
 };
 

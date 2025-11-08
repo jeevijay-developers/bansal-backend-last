@@ -195,7 +195,7 @@ class BookingController {
     try {
 
       const status = req.query.status || "active";
-    const page_name = "Test Series  Booking List";
+    const page_name = "Test Series Booking List";
       console.log(page_name);
 const whereClause = "WHERE order_type = 'test'";
 
@@ -204,6 +204,13 @@ const whereClause = "WHERE order_type = 'test'";
     co.id,
     co.user_id,
     u.name AS customer_name,
+    u.email,
+    u.mobile,
+    u.father_name,
+    u.mother_name,
+    u.dob,
+    u.address,
+    u.city,
     ts.name as course_name,
     co.transaction_id,
     co.payment_status,
@@ -264,7 +271,7 @@ const whereClause = "WHERE order_type = 'test'";
 
       const booking = results[0];
 
-      console.log(booking); 
+      // console.log(booking); 
       res.render("admin/booking/booking_details", {
         success: req.flash("success"),
         error: req.flash("error"),
@@ -436,8 +443,19 @@ static async boostProgramRequestList(req, res) {
   try {
     const { from_date, to_date, payment_status } = req.query;
 
+    // Get current user's role and name
+    const userRoles = req.roles || req.session.userRole || [];
+    const isSuperAdmin = userRoles.includes('Super Admin');
+    const userName = req.user?.name || req.session?.userName || '';
+
     let query = `SELECT * FROM boost_training_requests WHERE 1=1`;
     const values = [];
+
+    // Filter by center if user is not Super Admin
+    if (!isSuperAdmin && userName) {
+      query += ` AND centre = ?`;
+      values.push(userName);
+    }
 
     if (from_date) {
       query += ` AND DATE(created_at) >= ?`;
@@ -451,7 +469,7 @@ static async boostProgramRequestList(req, res) {
 
     if (payment_status) {
       query += ` AND payment_status = ?`;
-      values.push(payment_status); // expects 'pending' or 'success'
+      values.push(payment_status); // expects 'pending' or 'complete'
     }
 
     query += ` ORDER BY id DESC`;
@@ -464,6 +482,7 @@ static async boostProgramRequestList(req, res) {
       title: "Boost Program Request",
       request_data: rows,
       programs,
+      permissions: req.permissions || res.locals.permissions || [],
       req,
     });
 
@@ -481,7 +500,7 @@ static async boostProgramRequestDetails(req, res) {
       `SELECT * FROM boost_training_requests WHERE id = ?`,
       [id]
     );
-    console.log(requestData);
+    // console.log(requestData);
     if (!requestData.length) {
       return res.status(404).render("admin/404", { message: "Request not found" });
     }
@@ -493,6 +512,162 @@ static async boostProgramRequestDetails(req, res) {
   } catch (error) {
     console.error("Error fetching details:", error);
     res.status(500).render("admin/500", { message: "Server Error" });
+  }
+}
+
+static async boostProgramRequestListExport(req, res) {
+  try {
+    const { from_date, to_date, payment_status } = req.query;
+
+    // Get current user's role and name
+    const userRoles = req.roles || req.session.userRole || [];
+    const isSuperAdmin = userRoles.includes('Super Admin');
+    const userName = req.user?.name || req.session?.userName || '';
+
+    let query = `SELECT * FROM boost_training_requests WHERE 1=1`;
+    const values = [];
+
+    // Filter by center if user is not Super Admin
+    if (!isSuperAdmin && userName) {
+      query += ` AND centre = ?`;
+      values.push(userName);
+    }
+
+    if (from_date) {
+      query += ` AND DATE(created_at) >= ?`;
+      values.push(from_date);
+    }
+
+    if (to_date) {
+      query += ` AND DATE(created_at) <= ?`;
+      values.push(to_date);
+    }
+
+    if (payment_status) {
+      query += ` AND payment_status = ?`;
+      values.push(payment_status);
+    }
+
+    query += ` ORDER BY id DESC`;
+
+    const [rows] = await pool.promise().execute(query, values);
+
+    // Create CSV content with all detailed fields
+    const headers = [
+      'ID',
+      'Name',
+      'Email',
+      'Mobile',
+      'Program Type',
+      'Program Date',
+      'Price',
+      'Transaction ID',
+      'Status',
+      'DOB',
+      'Gender',
+      'Father Name',
+      'Mother Name',
+      'Stream',
+      'Class',
+      'Test Dated',
+      'Centre',
+      'Address',
+      'Pin Code',
+      'City',
+      'State',
+      'School Name',
+      'School Board',
+      'Agree',
+      'Created At',
+      'Updated At'
+    ];
+    let csv = headers.join(',') + '\n';
+
+    rows.forEach(row => {
+      // Format dates
+      const dob = row.dob 
+        ? new Date(row.dob).toLocaleString('en-GB', { 
+            day: '2-digit', 
+            month: '2-digit', 
+            year: 'numeric', 
+            hour: '2-digit', 
+            minute: '2-digit', 
+            hour12: true 
+          })
+        : '-';
+
+      const testDate = row.test_date 
+        ? new Date(row.test_date).toLocaleString('en-GB', { 
+            day: '2-digit', 
+            month: '2-digit', 
+            year: 'numeric'
+          })
+        : '-';
+
+      const createdAt = row.created_at 
+        ? new Date(row.created_at).toLocaleString('en-GB', { 
+            day: '2-digit', 
+            month: '2-digit', 
+            year: 'numeric', 
+            hour: '2-digit', 
+            minute: '2-digit', 
+            hour12: true 
+          })
+        : '-';
+
+      const updatedAt = row.updated_at 
+        ? new Date(row.updated_at).toLocaleString('en-GB', { 
+            day: '2-digit', 
+            month: '2-digit', 
+            year: 'numeric', 
+            hour: '2-digit', 
+            minute: '2-digit', 
+            hour12: true 
+          })
+        : '-';
+
+      const rowData = [
+        row.id || '',
+        `"${(row.name || 'N/A').replace(/"/g, '""')}"`,
+        `"${(row.email || 'N/A').replace(/"/g, '""')}"`,
+        `"${row.mobile || 'N/A'}"`,
+        `"${(row.program_type || 'N/A').replace(/"/g, '""')}"`,
+        `"${row.program_date || 'N/A'}"`,
+        `"${row.price || 'N/A'}"`,
+        `"${(row.transaction_id || 'N/A').replace(/"/g, '""')}"`,
+        `"${row.status === 1 ? 'Active' : 'Inactive'}"`,
+        `"${dob}"`,
+        `"${(row.gender || 'N/A').replace(/"/g, '""')}"`,
+        `"${(row.father_name || 'N/A').replace(/"/g, '""')}"`,
+        `"${(row.mother_name || 'N/A').replace(/"/g, '""')}"`,
+        `"${(row.stream || 'N/A').replace(/"/g, '""')}"`,
+        `"${(row.class || 'N/A').replace(/"/g, '""')}"`,
+        `"${testDate}"`,
+        `"${(row.centre || 'N/A').replace(/"/g, '""')}"`,
+        `"${(row.address || 'N/A').replace(/"/g, '""')}"`,
+        `"${row.pin_code || 'N/A'}"`,
+        `"${(row.city || 'N/A').replace(/"/g, '""')}"`,
+        `"${(row.state || 'N/A').replace(/"/g, '""')}"`,
+        `"${(row.school_name || 'N/A').replace(/"/g, '""')}"`,
+        `"${(row.school_board || 'N/A').replace(/"/g, '""')}"`,
+        `"${row.agree === 1 ? 'Yes' : 'No'}"`,
+        `"${createdAt}"`,
+        `"${updatedAt}"`
+      ];
+      
+      csv += rowData.join(',') + '\n';
+    });
+
+    // Set headers for CSV download
+    const filename = `boost-program-requests-detailed-${new Date().toISOString().split('T')[0]}.csv`;
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    
+    return res.send(csv);
+
+  } catch (error) {
+    console.error("Error exporting boost program requests:", error);
+    return res.status(500).send("Internal Server Error");
   }
 }
 

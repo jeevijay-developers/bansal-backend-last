@@ -12,9 +12,16 @@ const List = async (req, res) => {
 
     const search = req.query.search;
     const searchTerm = `%${search}%`;
+    
+    // Filter parameters
+    const centerFilter = req.query.center_id;
+    const categoryFilter = req.query.category_id;
+    const classFilter = req.query.class_id;
+    const fromDate = req.query.from_date;
+    const toDate = req.query.to_date;
 
     const userRoles = req.session.userRole || [];
-  const userId = req.user.id;
+    const userId = req.user.id;
     const queryParams = [];
 
     let getQuery = `
@@ -22,6 +29,8 @@ const List = async (req, res) => {
     fu.*,
     c.category_name,
     cl.name AS class_name,
+    cent.name AS center_name,
+    crs.course_name,
     (
       SELECT COUNT(*) 
       FROM course_orders co 
@@ -32,12 +41,38 @@ const List = async (req, res) => {
   FROM front_users fu
   LEFT JOIN categories c ON fu.category_id = c.id
   LEFT JOIN course_classes cl ON fu.class_id = cl.id
+  LEFT JOIN centers cent ON fu.center_id = cent.id
+  LEFT JOIN courses crs ON fu.course_id = crs.id
   WHERE 1 = 1
 `;
 
- if (userRoles.includes("Center")) {
-      getQuery += ` AND fu.center_id = ? `;
-      queryParams.push(userId);
+    // Filter by center for center users
+    if (userRoles.includes("Center")) {
+      // Get user's name and find matching center ID
+      const [userInfo] = await pool.promise().query(
+        `SELECT u.name, c.id AS center_id 
+         FROM users u
+         LEFT JOIN centers c ON u.name COLLATE utf8mb4_unicode_ci = c.name COLLATE utf8mb4_unicode_ci
+         WHERE u.id = ? AND c.deleted_at IS NULL
+         LIMIT 1`,
+        [userId]
+      );
+      
+      console.log('Center user login - User ID:', userId);
+      console.log('Center user info:', userInfo);
+      console.log('User roles:', userRoles);
+      
+      if (userInfo.length > 0 && userInfo[0].center_id) {
+        getQuery += ` AND fu.center_id = ? `;
+        queryParams.push(userInfo[0].center_id);
+        console.log('✓ Filtering students by center ID:', userInfo[0].center_id);
+        console.log('✓ Query params:', queryParams);
+      } else {
+        console.log('⚠️ WARNING: Center user has no matching center_id!');
+        console.log('⚠️ This means the user name does not match any center name');
+        // If no center match found, show no results (prevent showing all data)
+        getQuery += ` AND fu.center_id = -1 `; // This will match nothing
+      }
     }
 
     if (status1 === "trashed") {
@@ -52,8 +87,39 @@ const List = async (req, res) => {
       getQuery += ` AND (fu.name LIKE ? OR fu.mobile LIKE ? OR fu.email LIKE ?) `;
       queryParams.push(searchTerm, searchTerm, searchTerm);
     }
+    
+    if (centerFilter) {
+      getQuery += ` AND fu.center_id = ? `;
+      queryParams.push(centerFilter);
+    }
+
+    if (categoryFilter) {
+      getQuery += ` AND fu.category_id = ? `;
+      queryParams.push(categoryFilter);
+    }
+
+    if (classFilter) {
+      getQuery += ` AND fu.class_id = ? `;
+      queryParams.push(classFilter);
+    }
+
+    if (fromDate) {
+      getQuery += ` AND DATE(fu.created_at) >= ? `;
+      queryParams.push(fromDate);
+    }
+
+    if (toDate) {
+      getQuery += ` AND DATE(fu.created_at) <= ? `;
+      queryParams.push(toDate);
+    }
 
     getQuery += ` ORDER BY fu.id DESC `;
+
+    console.log('=== FINAL QUERY DEBUG ===');
+    console.log('User Roles:', userRoles);
+    console.log('Query:', getQuery);
+    console.log('Query Params:', queryParams);
+    console.log('========================');
 
     const page_name =
       status1 === "trashed"
@@ -68,10 +134,91 @@ const List = async (req, res) => {
           req.flash("error", error.message);
           return reject(error);
         }
+        console.log(`✓ Retrieved ${result.length} students for display`);
+        if (userRoles.includes("Center") && result.length > 0) {
+          console.log('Sample student center_id:', result[0].center_id);
+        }
         resolve(result);
       });
     });
-    courses = await Helper.getActiveCourses();
+    
+    // Fetch filter options
+    const courses = await Helper.getActiveCourses();
+    const categories = await Helper.getActiveCategories() || [];
+    const classes = await Helper.getActiveClasses() || [];
+    
+    // Filter centers based on user role
+    let centers = [];
+    if (userRoles.includes("Center")) {
+      // Center user can only see their own center
+      console.log('Center user detected. User ID:', userId);
+      
+      // Get user's name from users table
+      const [adminProfile] = await pool.promise().query(
+        `SELECT name FROM users WHERE id = ? LIMIT 1`,
+        [userId]
+      );
+      console.log('Admin profile result:', adminProfile);
+      
+      if (adminProfile.length > 0 && adminProfile[0].name) {
+        const userName = adminProfile[0].name;
+        console.log('User name:', userName);
+        console.log('User name length:', userName.length);
+        console.log('User name trimmed:', userName.trim());
+        
+        // First, let's see ALL active centers
+        const [allCenters] = await pool.promise().query(
+          `SELECT id, name FROM centers WHERE status = 1 AND deleted_at IS NULL`
+        );
+        console.log('All active centers:', allCenters);
+        
+        // Find center by matching the user's name with center's name (using COLLATE for case-insensitive matching)
+        const [centerInfo] = await pool.promise().query(
+          `SELECT id, name FROM centers 
+           WHERE name COLLATE utf8mb4_unicode_ci = ? COLLATE utf8mb4_unicode_ci 
+           AND status = 1 
+           AND deleted_at IS NULL`,
+          [userName]
+        );
+        centers = centerInfo || [];
+        console.log('Found center by name match:', centers);
+        
+        // If no match found with exact name, try trimming whitespace
+        if (centers.length === 0) {
+          console.log('No exact match found, trying with TRIM pattern...');
+          const [centerInfoLike] = await pool.promise().query(
+            `SELECT id, name FROM centers 
+             WHERE TRIM(name) COLLATE utf8mb4_unicode_ci = TRIM(?) COLLATE utf8mb4_unicode_ci 
+             AND status = 1 
+             AND deleted_at IS NULL`,
+            [userName]
+          );
+          centers = centerInfoLike || [];
+          console.log('Found center with TRIM:', centers);
+        }
+        
+        // If still no match, try with LIKE
+        if (centers.length === 0) {
+          console.log('Still no match, trying with LIKE...');
+          const [centerInfoLike] = await pool.promise().query(
+            `SELECT id, name FROM centers 
+             WHERE name LIKE ? 
+             AND status = 1 
+             AND deleted_at IS NULL`,
+            [`%${userName.trim()}%`]
+          );
+          centers = centerInfoLike || [];
+          console.log('Found center with LIKE:', centers);
+        }
+      } else {
+        console.log('No user found with this ID');
+        centers = [];
+      }
+    } else {
+      // Super admin can see all centers
+      centers = await Helper.getCenters(['id', 'name']) || [];
+    }
+    
     res.render("admin/customer/list", {
       success: req.flash("success"),
       error: req.flash("error"),
@@ -79,10 +226,22 @@ const List = async (req, res) => {
       req,
       page_name,
       status1,
-      search,
-      courses
+      search: search || '',
+      courses,
+      centers,
+      categories,
+      classes,
+      centerFilter: centerFilter || '',
+      categoryFilter: categoryFilter || '',
+      classFilter: classFilter || '',
+      fromDate: fromDate || '',
+      toDate: toDate || '',
+      permissions: req.session.permissions || [],
+      userRoles: userRoles,
+      userId: userId
     });
   } catch (error) {
+    console.error('Error in List function:', error);
     req.flash("error", error.message);
     res.redirect("/admin/student-list");
   }
@@ -1182,25 +1341,118 @@ const testSeriesBooking = async (req, res) => {
 const importStudents = async (req, res) => {
   try {
     if (!req.file) {
-      return res.status(400).json({ error: "No file uploaded" });
+      return res.status(400).json({ success: false, message: "No file uploaded" });
     }
 
-    // Read the Excel file
+    // Get form data from request
+    const { center_id, category_id, class_id, course_id } = req.body;
+    
+    // Get user info
+    const userRoles = req.session.userRole || [];
+    const userId = req.user.id;
+
+    // Determine registration_type based on user role
+    const registration_type = userRoles.includes("Center") ? "center" : "admin";
+
+    // Validate required dropdown selections
+    if (!center_id) {
+      fs.unlinkSync(req.file.path);
+      return res.status(400).json({ success: false, message: "Center is required" });
+    }
+
+    if (!category_id) {
+      fs.unlinkSync(req.file.path);
+      return res.status(400).json({ success: false, message: "Stream is required" });
+    }
+
+    if (!class_id) {
+      fs.unlinkSync(req.file.path);
+      return res.status(400).json({ success: false, message: "Class is required" });
+    }
+
+    // Optional: Validate course_id if provided
+    if (course_id) {
+      const [courseCheck] = await pool.promise().query(
+        `SELECT id FROM courses WHERE id = ? AND deleted_at IS NULL LIMIT 1`,
+        [course_id]
+      );
+      
+      if (courseCheck.length === 0) {
+        fs.unlinkSync(req.file.path);
+        return res.status(400).json({ success: false, message: "Invalid course selected" });
+      }
+    }
+
+    // Role-based validation: Center users can only import to their own center
+    if (userRoles.includes("Center")) {
+      // Get user's name
+      const [adminProfile] = await pool.promise().query(
+        `SELECT name FROM users WHERE id = ? LIMIT 1`,
+        [userId]
+      );
+      
+      if (adminProfile.length > 0 && adminProfile[0].name) {
+        // Get the center name by ID
+        const [centerInfo] = await pool.promise().query(
+          `SELECT name FROM centers WHERE id = ? LIMIT 1`,
+          [center_id]
+        );
+        
+        if (centerInfo.length === 0) {
+          fs.unlinkSync(req.file.path);
+          return res.status(400).json({ 
+            success: false, 
+            message: "Invalid center selected" 
+          });
+        }
+        
+        // Check if user's name matches the center's name
+        if (adminProfile[0].name !== centerInfo[0].name) {
+          fs.unlinkSync(req.file.path);
+          return res.status(403).json({ 
+            success: false, 
+            message: "You can only import students to your own center" 
+          });
+        }
+      } else {
+        fs.unlinkSync(req.file.path);
+        return res.status(403).json({ 
+          success: false, 
+          message: "User profile not found" 
+        });
+      }
+    }
+
+    // Read the Excel/CSV file
     const workbook = XLSX.readFile(req.file.path);
     const sheetName = workbook.SheetNames[0];
     const sheetData = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
 
     if (!sheetData.length) {
-      return res.status(400).json({ error: "Excel file is empty" });
+      fs.unlinkSync(req.file.path);
+      return res.status(400).json({ success: false, message: "Excel file is empty" });
     }
+
+    let inserted = 0;
+    let updated = 0;
+    let skipped = 0;
+
+    console.log(`Starting import: Center ID=${center_id}, Category ID=${category_id}, Class ID=${class_id}, Course ID=${course_id || 'None'}`);
+    console.log(`Registration Type: ${registration_type}`);
 
     // Process each student row
     for (const row of sheetData) {
-      const mobile = (String(row["STUDENT NO"] || "")).trim()
-      const email = (String(row["email ids"] || "")).trim()
+      const mobile = (String(row["student_no"] || "")).trim();
+      const email = (String(row["email"] || "")).trim();
+      const name = (String(row["name"] || "")).trim();
 
-      if (!mobile && !email) continue;
+      // Skip rows without both mobile and email
+      if (!mobile && !email) {
+        skipped++;
+        continue;
+      }
 
+      // Check if mobile or email already exists
       const [existingUser] = await pool
         .promise()
         .query(
@@ -1209,6 +1461,7 @@ const importStudents = async (req, res) => {
         );
 
       if (existingUser.length > 0) {
+        // Update existing user
         await pool.promise().query(
           `UPDATE front_users 
            SET name = ?, 
@@ -1216,55 +1469,79 @@ const importStudents = async (req, res) => {
                category_id = ?, 
                class_id = ?, 
                center_id = ?, 
+               course_id = ?,
                father_name = ?, 
                city = ?, 
-               registration_source = ?, 
+               registration_source = ?,
+               registration_type = ?,
                updated_at = NOW()
            WHERE id = ?`,
           [
-            row["Name of the Students"] || "",
-            row["PARENT NO"] || "",
-            row["STREAM"] || "",
-            row["CLASS"] || "",
-            row["Center"] || "",
-            row["FATHERS NAME"] || "",
-            row["ADDRESS CITY"] || "",
+            name,
+            row["parent_no"] || "",
+            category_id,  // From dropdown
+            class_id,     // From dropdown
+            center_id,    // From dropdown (validated)
+            course_id || null,  // Optional course from dropdown
+            row["fathers_name"] || "",
+            row["address_city"] || "",
             "excel",
+            registration_type,  // "admin" or "center" based on user role
             existingUser[0].id,
           ]
         );
+        updated++;
+        console.log(`Updated student: ${name} (${email}) - Center ID: ${center_id}, Registration Type: ${registration_type}`);
       } else {
+        // Insert new student
         await pool.promise().query(
           `INSERT INTO front_users 
-           (name, email, mobile, parent_no, category_id, class_id, center_id, father_name, city, registration_source, created_at, updated_at)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
+           (name, email, mobile, parent_no, category_id, class_id, center_id, course_id, father_name, city, registration_source, registration_type, status, created_at, updated_at)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
           [
-            row["Name of the Students"] || "",
+            name,
             email,
             mobile,
-            row["PARENT NO"] || "",
-            row["STREAM"] || "",
-            row["CLASS"] || "",
-            row["Center"] || "",
-            row["FATHERS NAME"] || "",
-            row["ADDRESS CITY"] || "",
+            row["parent_no"] || "",
+            category_id,  // From dropdown
+            class_id,     // From dropdown
+            center_id,    // From dropdown (validated)
+            course_id || null,  // Optional course from dropdown
+            row["fathers_name"] || "",
+            row["address_city"] || "",
             "excel",
+            registration_type,  // "admin" or "center" based on user role
+            1,  // Active by default
           ]
         );
+        inserted++;
+        console.log(`Inserted student: ${name} (${email}) - Center ID: ${center_id}, Registration Type: ${registration_type}`);
       }
     }
 
+    // Remove uploaded file
     fs.unlinkSync(req.file.path);
 
-    return res.status(200).json({ message: "Students imported/updated successfully" });
+    console.log(`Import completed - Inserted: ${inserted}, Updated: ${updated}, Skipped: ${skipped}`);
+
+    return res.status(200).json({ 
+      success: true, 
+      message: `Import completed successfully!`,
+      inserted: inserted,
+      updated: updated,
+      skipped: skipped
+    });
   } catch (error) {
     console.error("Error importing students:", error);
 
-    // send stack + error message in response
+    // Clean up file on error
+    if (req.file && req.file.path && fs.existsSync(req.file.path)) {
+      fs.unlinkSync(req.file.path);
+    }
+
     return res.status(500).json({
-      error: "Internal Server Error",
-      message: error.message,
-      stack: error.stack,  // ⚡ shows full stack trace
+      success: false,
+      message: "Internal Server Error: " + error.message
     });
   }
 };

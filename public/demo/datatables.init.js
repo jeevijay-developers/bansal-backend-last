@@ -90,8 +90,8 @@ let dataSet = [
         this.nodes().to$().removeClass('selected')
     });
 	
-	// 
-	var table = $('#example3, #example4, #example5').DataTable();
+	// Note: #example3 is initialized with custom config in its own page
+	var table = $('#example4, #example5').DataTable();
 	$('#example tbody').on('click', 'tr', function () {
 		var data = table.row( this ).data();
 	});

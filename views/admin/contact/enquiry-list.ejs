@@ -68,7 +68,9 @@
              <td><%= r.enquiry_for %></td>
          
         
-          <td><%= new Date(r.created_at).toLocaleString() %></td>
+          <td><%= r.created_at ? new Date(r.created_at).toLocaleString('en-GB', { day: '2-digit' ,
+                              month: '2-digit' , year: 'numeric' , hour: '2-digit' , minute: '2-digit' , hour12: true })
+                              : '-' %></td>
         </tr>
       <% }) %>
     <% } else { %>
@@ -89,6 +91,39 @@
 <%- include('../layouts/footer') %>
 
 <script>
+// Custom date sorting for dd/mm/yyyy hh:mm AM/PM format
+jQuery.extend(jQuery.fn.dataTableExt.oSort, {
+  "date-uk-pre": function (a) {
+    if (a == null || a === "" || a === "-") {
+      return 0;
+    }
+    // Extract date part from "dd/mm/yyyy, hh:mm AM/PM" format
+    var ukDatea = a.split(',')[0].trim().split('/');
+    return (ukDatea[2] + ukDatea[1] + ukDatea[0]) * 1;
+  },
+  "date-uk-asc": function (a, b) {
+    return ((a < b) ? -1 : ((a > b) ? 1 : 0));
+  },
+  "date-uk-desc": function (a, b) {
+    return ((a < b) ? 1 : ((a > b) ? -1 : 0));
+  }
+});
+
+// Initialize DataTable with custom date column - destroy existing instance first
+$(document).ready(function() {
+  // Check if DataTable already exists and destroy it
+  if ($.fn.DataTable.isDataTable('#example3')) {
+    $('#example3').DataTable().destroy();
+  }
+  
+  // Initialize with custom configuration
+  $('#example3').DataTable({
+    "columnDefs": [
+      { "type": "date-uk", "targets": 8 } // Date column is the 9th column (index 8)
+    ]
+  });
+});
+
 document.getElementById("filterBtn").addEventListener("click", () => {
   const params = new URLSearchParams();
 

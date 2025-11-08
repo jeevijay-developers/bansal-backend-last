@@ -10,12 +10,9 @@
                 <%= page_name %>
               </h4>
               <div class="text-end">
-                <!-- <% if (type === 'trashed') { %>
-                <a class="btn btn-primary btn-sm" href="<%= list_url %>"><i class="fas fa-list"></i></a>
-              <% } else { %>
-                <a class="btn btn-danger btn-sm" href="<%= trashed_list_url %>"><i class="fas fa-trash"></i></a>
-              <% } %>
-              <a class="btn btn-info btn-sm" href="<%= create_url %>"><i class="fas fa-plus"></i></a> -->
+                <button type="button" class="btn btn-success btn-sm me-2" data-bs-toggle="modal" data-bs-target="#addProgramModal" title="Add Program">
+                  <i class="fas fa-plus"></i> Add Program
+                </button>
                 <button type="button" id="backButton" class="btn btn-primary btn-sm"><i class="fa fa-arrow-left"></i>
                   Back</button>
               </div>
@@ -28,9 +25,10 @@
                     <tr>
                       <th>Sr. No.</th>
                       <th>Title</th>
+                      <th>Type</th>
                       <th>Program Date</th>
                       <th>Price</th>
-
+                      <th>Status</th>
                       <th>Actions</th>
                     </tr>
                   </thead>
@@ -43,6 +41,15 @@
                         <td>
                           <%= program.title %>
                         </td>
+                        <td>
+                          <% if (program.type === 'boost') { %>
+                            <span class="badge bg-success">Boost</span>
+                          <% } else if (program.type === 'bftp') { %>
+                            <span class="badge bg-info">BFTP</span>
+                          <% } else { %>
+                            <span class="badge bg-secondary">-</span>
+                          <% } %>
+                        </td>
                         <!-- <td><%= formatDate(program.program_date) %></td> -->
 
                         <td>
@@ -50,17 +57,23 @@
                             day: '2-digit' , month: '2-digit' , year: 'numeric' }) : '-' %>
                         </td>
 
-                        <% if (program.title==="Boost Program" ) { %>
-                          <td>₹<%= program.price %>
-                          </td>
+                        <td>₹<%= program.price || 0 %></td>
+
+                        <td>
+                          <% if (program.status == 1) { %>
+                            <span class="badge bg-success">Active</span>
                           <% } else { %>
-                            <td>-</td>
-                            <% } %>
+                            <span class="badge bg-danger">Inactive</span>
+                          <% } %>
+                        </td>
 
                               <td>
-                                <a href="/admin/<%= route %>-edit/<%= program.id %>" class="btn btn-info btn-sm">
+                                <a href="/admin/<%= route %>-edit/<%= program.id %>" class="btn btn-info btn-sm" title="Edit">
                                   <i class="fas fa-pencil-alt"></i>
                                 </a>
+                                <button type="button" class="btn btn-danger btn-sm" title="Delete" onclick="confirmDelete(<%= program.id %>, '<%= program.title %>')">
+                                  <i class="fas fa-trash"></i>
+                                </button>
                               </td>
                       </tr>
                       <% }) %>
@@ -75,7 +88,261 @@
     </div>
   </section>
 
+  <!-- Add Program Modal -->
+  <div class="modal fade" id="addProgramModal" tabindex="-1" aria-labelledby="addProgramModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header bg-success text-white">
+          <h5 class="modal-title" id="addProgramModalLabel">
+            <i class="fas fa-plus-circle"></i> Add New Program
+          </h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <form id="addProgramForm">
+          <div class="modal-body">
+            <div class="row">
+              <!-- Title -->
+              <div class="col-md-6 mb-3">
+                <label for="add_title" class="form-label">Title <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" id="add_title" name="title" placeholder="Enter program title" required>
+                <div class="invalid-feedback">Please enter program title</div>
+              </div>
+
+              <!-- Type -->
+              <div class="col-md-6 mb-3">
+                <label for="add_type" class="form-label">Type <span class="text-danger">*</span></label>
+                <select class="form-control" id="add_type" name="type" required>
+                  <option value="">Select Type</option>
+                  <option value="boost">Boost Program</option>
+                  <option value="bftp">BFTP Program</option>
+                </select>
+                <div class="invalid-feedback">Please select program type</div>
+              </div>
+
+              <!-- Program Date -->
+              <div class="col-md-6 mb-3">
+                <label for="add_program_date" class="form-label">Program Date <span class="text-danger">*</span></label>
+                <input type="date" class="form-control" id="add_program_date" name="program_date" min="<%= new Date().toISOString().split('T')[0] %>" required>
+                <div class="invalid-feedback">Please select program date</div>
+              </div>
+
+              <!-- Price -->
+              <div class="col-md-6 mb-3">
+                <label for="add_price" class="form-label">Price (₹) <span class="text-danger">*</span></label>
+                <input type="number" class="form-control" id="add_price" name="price" placeholder="Enter price" min="0" step="0.01" value="0" required>
+                <div class="invalid-feedback">Please enter price</div>
+              </div>
+
+              <!-- Status -->
+              <div class="col-md-12 mb-3">
+                <label for="add_status" class="form-label">Status</label>
+                <select class="form-control" id="add_status" name="status">
+                  <option value="1" selected>Active</option>
+                  <option value="0">Inactive</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+              <i class="fas fa-times"></i> Cancel
+            </button>
+            <button type="submit" class="btn btn-success" id="addProgramBtn">
+              <i class="fas fa-save"></i> Add Program
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete Confirmation Modal -->
+  <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header bg-danger text-white">
+          <h5 class="modal-title" id="deleteModalLabel">
+            <i class="fas fa-exclamation-triangle"></i> Confirm Delete
+          </h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p class="mb-0">Are you sure you want to delete <strong id="programTitle"></strong>?</p>
+          <p class="text-muted small mt-2 mb-0">This action will soft-delete the program.</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+            <i class="fas fa-times"></i> Cancel
+          </button>
+          <button type="button" class="btn btn-danger" id="confirmDeleteBtn">
+            <i class="fas fa-trash"></i> Delete
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <%- include('../layouts/footer') %>
+
+    <script>
+      // Add Program Form Submission
+      document.getElementById('addProgramForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const form = this;
+        const submitBtn = document.getElementById('addProgramBtn');
+        const originalText = submitBtn.innerHTML;
+        
+        // Validate form
+        if (!form.checkValidity()) {
+          form.classList.add('was-validated');
+          return;
+        }
+        
+        // Disable button and show loading
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Adding...';
+        
+        // Prepare form data
+        const formData = new FormData(form);
+        
+        try {
+          const response = await fetch('/admin/<%= route %>-update', {
+            method: 'POST',
+            body: formData
+          });
+          
+          const data = await response.json();
+          
+          if (data.success) {
+            // Close modal
+            const addModal = bootstrap.Modal.getInstance(document.getElementById('addProgramModal'));
+            addModal.hide();
+            
+            // Show success message
+            const alertDiv = document.createElement('div');
+            alertDiv.className = 'alert alert-success alert-dismissible fade show position-fixed';
+            alertDiv.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+            alertDiv.innerHTML = `
+              <i class="fas fa-check-circle"></i> ${data.message || 'Program added successfully'}
+              <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            document.body.appendChild(alertDiv);
+            
+            // Reload page after delay
+            setTimeout(() => {
+              window.location.reload();
+            }, 1500);
+          } else {
+            throw new Error(data.message || 'Failed to add program');
+          }
+        } catch (error) {
+          console.error('Error:', error);
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = originalText;
+          
+          // Show error message
+          const alertDiv = document.createElement('div');
+          alertDiv.className = 'alert alert-danger alert-dismissible fade show position-fixed';
+          alertDiv.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+          alertDiv.innerHTML = `
+            <i class="fas fa-exclamation-circle"></i> ${error.message || 'An error occurred while adding the program'}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+          `;
+          document.body.appendChild(alertDiv);
+          
+          setTimeout(() => alertDiv.remove(), 5000);
+        }
+      });
+
+      // Reset form when modal is closed
+      document.getElementById('addProgramModal').addEventListener('hidden.bs.modal', function () {
+        const form = document.getElementById('addProgramForm');
+        form.reset();
+        form.classList.remove('was-validated');
+        const btn = document.getElementById('addProgramBtn');
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-save"></i> Add Program';
+      });
+
+      // Delete Program Functionality
+      let programToDelete = null;
+
+      function confirmDelete(programId, programTitle) {
+        programToDelete = programId;
+        document.getElementById('programTitle').textContent = `"${programTitle}"`;
+        const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+        deleteModal.show();
+      }
+
+      document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
+        if (!programToDelete) return;
+
+        // Disable button and show loading
+        const btn = this;
+        const originalText = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Deleting...';
+
+        // Send delete request
+        fetch(`/admin/<%= route %>-delete/${programToDelete}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          }
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            // Close modal
+            const deleteModal = bootstrap.Modal.getInstance(document.getElementById('deleteModal'));
+            deleteModal.hide();
+            
+            // Show success message
+            const alertDiv = document.createElement('div');
+            alertDiv.className = 'alert alert-success alert-dismissible fade show position-fixed';
+            alertDiv.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+            alertDiv.innerHTML = `
+              <i class="fas fa-check-circle"></i> ${data.message || 'Program deleted successfully'}
+              <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            document.body.appendChild(alertDiv);
+            
+            // Reload page after delay
+            setTimeout(() => {
+              window.location.reload();
+            }, 1500);
+          } else {
+            throw new Error(data.message || 'Failed to delete program');
+          }
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          btn.disabled = false;
+          btn.innerHTML = originalText;
+          
+          // Show error message
+          const alertDiv = document.createElement('div');
+          alertDiv.className = 'alert alert-danger alert-dismissible fade show position-fixed';
+          alertDiv.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+          alertDiv.innerHTML = `
+            <i class="fas fa-exclamation-circle"></i> ${error.message || 'An error occurred while deleting the program'}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+          `;
+          document.body.appendChild(alertDiv);
+          
+          setTimeout(() => alertDiv.remove(), 5000);
+        });
+      });
+
+      // Reset modal state when closed
+      document.getElementById('deleteModal').addEventListener('hidden.bs.modal', function () {
+        programToDelete = null;
+        const btn = document.getElementById('confirmDeleteBtn');
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-trash"></i> Delete';
+      });
+    </script>
 
     <% function formatDate(dateStr) { const date=new Date(dateStr); return new Intl.DateTimeFormat('en-GB', {
       day: '2-digit' , month: 'short' , year: 'numeric' }).format(date); } %>

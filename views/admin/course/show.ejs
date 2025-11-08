@@ -4,7 +4,17 @@
     <div class="container-fluid">
       <div class="page-header">
  
-     <%- include('../partials/course_tabs', { course: course }) %>
+     <%- include('../partials/course_tabs', { 
+       course: course, 
+       subjectCount: subjectCount,
+       chapterCount: chapterCount,
+       pdfCount: pdfCount,
+       videoCount: videoCount,
+       bookingCount: bookingCount,
+       testCount: testCount,
+       liveClassCount: liveClassCount,
+       canAccessAllTabs: canAccessAllTabs 
+     }) %>
 </div>
 
         <div class="row">

@@ -44,6 +44,7 @@ router.get(
 
 
 router.get("/admin/program-list", adminauthenticateCustomer,  ProgramController.programList);
+router.get("/admin/program-create", adminauthenticateCustomer,  ProgramController.Create);
 router.get("/admin/program-edit/:postId", adminauthenticateCustomer,  ProgramController.Edit);
 router.post(
   `/admin/program-update/:postId?`,
@@ -59,6 +60,5 @@ router.get("/admin/career-request-details/:id", adminauthenticateCustomer,  cont
 
 
 router.get("/admin/bftp-request-list", adminauthenticateCustomer,  controller.bftpRequestList);
-router.get("/admin/bftp-request-list/export", adminauthenticateCustomer,  controller.bftpRequestListExport);
 router.get("/admin/bftp-request-details/:id", adminauthenticateCustomer,  controller.bftpRequestDetails);
 module.exports = router;

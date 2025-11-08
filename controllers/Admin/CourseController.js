@@ -91,29 +91,49 @@ function List(req, res) {
     categories.category_name,
     course_classes.name AS class_name,
     users.name AS created_by_name,
-    roles.name AS created_by_role
+    roles.name AS created_by_role,
+    ur.role_id as creator_role_id
   FROM courses
   LEFT JOIN categories ON courses.category_id = categories.id
   LEFT JOIN course_classes ON courses.course_class_id = course_classes.id
   LEFT JOIN users ON courses.created_by = users.id
   LEFT JOIN roles ON users.role_id = roles.id
+  LEFT JOIN user_roles ur ON users.id = ur.user_id
   WHERE ${filters.join(" AND ")}
   ORDER BY courses.course_serial_no ASC
 `;
 
   runQuery(sql, queryParams)
     .then((courses) => {
-       courses = courses.map((course) => {
-      return {
-        ...course,
-        isEdit: course.created_by === req.user.id,
-        isDelete: course.created_by === req.user.id,
-         isEdit: course.created_by === req.user.id,
-      isDelete: course.created_by === req.user.id,
-      created_by_name: course.created_by_name || '',
-      created_by_role: course.created_by_role || '',
-      };
-    });
+      // Get current user's role - check req.user.role_id first
+      let userRoleId = null;
+      if (req.user && req.user.role_id) {
+        userRoleId = parseInt(req.user.role_id); // Convert string to number
+      } else if (req.roles && req.roles.length > 0 && typeof req.roles[0] === 'object') {
+        userRoleId = req.roles[0].id || req.roles[0].role_id;
+      } else if (req.session.userRole && req.session.userRole.length > 0 && typeof req.session.userRole[0] === 'object') {
+        userRoleId = req.session.userRole[0].id || req.session.userRole[0].role_id;
+      }
+      
+      const isSuperAdmin = userRoleId === 1;
+      const currentUserId = req.user?.id || req.session?.adminUserId;
+      
+      courses = courses.map((course) => {
+        const createdBySuperAdmin = course.creator_role_id === 1;
+        const isCreator = course.created_by === currentUserId;
+        
+        // Only Super Admin can edit/delete courses created by Super Admin
+        const canEdit = isSuperAdmin || (!createdBySuperAdmin && isCreator);
+        const canDelete = isSuperAdmin || (!createdBySuperAdmin && isCreator);
+        
+        return {
+          ...course,
+          isEdit: canEdit,
+          isDelete: canDelete,
+          created_by_name: course.created_by_name || '',
+          created_by_role: course.created_by_role || '',
+        };
+      });
       return runQuery(
         `SELECT id, category_name FROM categories WHERE deleted_at IS NULL`
       ).then((category_list) => {
@@ -332,6 +352,58 @@ const generateImageURL = (imagePath) => {
 const Edit = async (req, res) => {
   try {
     const courseId = req.params.courseId; // Renamed for clarity (was 'customerId')
+    
+    // Get current user's role - check req.user.role_id first
+    let userRoleId = null;
+    if (req.user && req.user.role_id) {
+      userRoleId = parseInt(req.user.role_id); // Convert string to number
+    } else if (req.roles && req.roles.length > 0 && typeof req.roles[0] === 'object') {
+      userRoleId = req.roles[0].id || req.roles[0].role_id;
+    } else if (req.session.userRole && req.session.userRole.length > 0 && typeof req.session.userRole[0] === 'object') {
+      userRoleId = req.session.userRole[0].id || req.session.userRole[0].role_id;
+    }
+    
+    const isSuperAdmin = userRoleId === 1;
+    const currentUserId = req.user?.adminUserId || req.session?.adminUserId;
+    
+    // Check permission before allowing edit
+    const permissionCheckQuery = `
+      SELECT 
+        c.id,
+        c.created_by,
+        ur.role_id as creator_role_id
+      FROM 
+        \`courses\` c
+      LEFT JOIN 
+        users u ON c.created_by = u.id
+      LEFT JOIN 
+        user_roles ur ON u.id = ur.user_id
+      WHERE 
+        c.id = ?
+    `;
+    
+    const permissionCheck = await new Promise((resolve, reject) => {
+      pool.query(permissionCheckQuery, [courseId], (error, result) => {
+        if (error) return reject(error);
+        if (result.length === 0) return reject(new Error("Course not found"));
+        resolve(result[0]);
+      });
+    });
+    
+    const createdBySuperAdmin = permissionCheck.creator_role_id === 1;
+    const isCreator = permissionCheck.created_by === currentUserId;
+    
+    // Only Super Admin can edit courses created by Super Admin
+    if (createdBySuperAdmin && !isSuperAdmin) {
+      req.flash("error", "You do not have permission to edit this course. Only Super Admin can edit courses created by Super Admin.");
+      return res.redirect("/admin/course-list");
+    }
+    
+    // Others can only edit their own courses
+    if (!isSuperAdmin && !isCreator) {
+      req.flash("error", "You do not have permission to edit this course.");
+      return res.redirect("/admin/course-list");
+    }
 
     // Fetch the course based on the provided courseId
     const getCourseQuery = "SELECT * FROM courses WHERE id = ?";
@@ -697,16 +769,48 @@ const PermanentDelete = async (req, res) => {
 const Show = async (req, res) => {
   try {
     const postId = req.params.courseId;
+    
+    // Get current user's role - try multiple sources
+    let userRoleId = null;
+    
+    // Debug logging
+    console.log("=== Show Function Debug ===");
+    console.log("req.roles:", req.roles);
+    console.log("req.user:", req.user);
+    console.log("req.session.userRole:", req.session.userRole);
+    
+    // Try to get role ID from different sources
+    // First check req.user.role_id (this is the most reliable)
+    if (req.user && req.user.role_id) {
+      userRoleId = parseInt(req.user.role_id); // Convert string to number
+    } else if (req.roles && req.roles.length > 0 && typeof req.roles[0] === 'object') {
+      // If roles is array of objects
+      userRoleId = req.roles[0].id || req.roles[0].role_id;
+    } else if (req.session.userRole && req.session.userRole.length > 0 && typeof req.session.userRole[0] === 'object') {
+      userRoleId = req.session.userRole[0].id || req.session.userRole[0].role_id;
+    }
+    
+    console.log("Resolved userRoleId:", userRoleId);
+    
+    const isSuperAdmin = userRoleId === 1;
+    console.log("isSuperAdmin:", isSuperAdmin);
+    console.log("========================");
 
-    // 1. Fetch course
+    // 1. Fetch course with creator's role info
     const courseQuery = `
       SELECT 
         ts.*, 
-        c.category_name 
+        c.category_name,
+        u.id as creator_user_id,
+        ur.role_id as creator_role_id
       FROM 
         \`courses\` ts
       LEFT JOIN 
         categories c ON ts.category_id = c.id
+      LEFT JOIN 
+        users u ON ts.created_by = u.id
+      LEFT JOIN 
+        user_roles ur ON u.id = ur.user_id
       WHERE 
         ts.id = ?
     `;
@@ -754,6 +858,19 @@ const Show = async (req, res) => {
     const bookingCount = await Helper.getBookingCountByCourseId(postId);
     const testCount = await Helper.getTestCountByCourseId(postId);
     const liveClassCount = await Helper.getLiveClassCountByCourseId(postId);
+    
+    // Determine permissions
+    const createdBySuperAdmin = post.creator_role_id === 1;
+    const isCreator = post.created_by === req.user?.adminUserId || post.created_by === req.session?.adminUserId;
+    
+    // Only Super Admin can edit courses created by Super Admin
+    // Others can edit their own courses
+    const canEdit = isSuperAdmin || (!createdBySuperAdmin && isCreator);
+    
+    // Only Super Admin can access all tabs for Super Admin-created courses
+    // Others can access all tabs only for non-Super Admin courses
+    const canAccessAllTabs = isSuperAdmin || !createdBySuperAdmin;
+    
     res.render("admin/course/show", {
       success: req.flash("success"),
       error: req.flash("error"),
@@ -767,6 +884,9 @@ const Show = async (req, res) => {
       testCount,
       bookingCount,
       liveClassCount,
+      canEdit,
+      canAccessAllTabs,
+      isSuperAdmin,
       form_url: `/admin/course-update/${postId}`,
       page_name: "Course Details",
     });

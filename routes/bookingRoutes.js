@@ -25,6 +25,7 @@ router.get(
 
 router.get("/admin/faculty-training-request-list", adminauthenticateCustomer,  controller.facultyTrainingRequestList);
 router.get("/admin/boost-program-requests",adminauthenticateCustomer,  controller.boostProgramRequestList);
+router.get("/admin/boost-program-requests/export",adminauthenticateCustomer,  controller.boostProgramRequestListExport);
 router.get('/admin/boost-program-request-details/:id', adminauthenticateCustomer,  controller.boostProgramRequestDetails);
 
 module.exports = router;

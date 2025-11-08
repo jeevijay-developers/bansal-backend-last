@@ -30,6 +30,10 @@ register: async (req, res) => {
       class_id,
       registration_type,
       center_id,
+      fatherName,
+      motherName,
+      dob,
+      address,
     } = req.body;
 
     // Validations
@@ -42,6 +46,10 @@ register: async (req, res) => {
     if (!category_id) return res.status(400).json({ success: false, error: "Category ID is required" });
     if (!class_id) return res.status(400).json({ success: false, error: "Class ID is required" });
     if (!registration_type) return res.status(400).json({ success: false, error: "Registration type is required" });
+    if (!fatherName) return res.status(400).json({ success: false, error: "Father name is required" });
+    if (!motherName) return res.status(400).json({ success: false, error: "Mother name is required" });
+    if (!dob) return res.status(400).json({ success: false, error: "Date of birth is required" });
+    if (!address) return res.status(400).json({ success: false, error: "Address is required" });
     if (registration_type === "offline" && !center_id) {
       return res.status(400).json({ success: false, error: "Center ID is required for offline registration" });
     }
@@ -62,8 +70,11 @@ register: async (req, res) => {
 
     const unverifiedUser = existingUsers.find(u => u.verify_otp_status === 0);
     if (unverifiedUser) {
-      // Update OTP for unverified user
-      await dbPool.promise().query(`UPDATE front_users SET register_otp = ?, otp_expires = ? WHERE mobile = ?`, [otp, otpExpires, mobileNumber]);
+      // Update OTP and other fields for unverified user
+      await dbPool.promise().query(
+        `UPDATE front_users SET name = ?, email = ?, city = ?, category_id = ?, class_id = ?, registration_type = ?, center_id = ?, father_name = ?, mother_name = ?, dob = ?, address = ?, register_otp = ?, otp_expires = ? WHERE mobile = ?`, 
+        [name, email, city, category_id, class_id, registration_type, registration_type === "offline" ? center_id : null, fatherName, motherName, dob, address, otp, otpExpires, mobileNumber]
+      );
 
       // Send OTP SMS
       const SMS_USERNAME = "20190320";
@@ -97,8 +108,8 @@ register: async (req, res) => {
         // Insert new user
         const insertQuery = `
           INSERT INTO front_users 
-          (name, email, mobile, city, category_id, class_id, registration_type, center_id, verify_otp_status, register_otp, otp_expires) 
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+          (name, email, mobile, city, category_id, class_id, registration_type, center_id, father_name, mother_name, dob, address, verify_otp_status, register_otp, otp_expires) 
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
         const values = [
           name,
           email,
@@ -108,6 +119,10 @@ register: async (req, res) => {
           class_id,
           registration_type,
           registration_type === "offline" ? center_id : null,
+          fatherName,
+          motherName,
+          dob,
+          address,
           0,
           otp,
           otpExpires,
@@ -131,7 +146,7 @@ register: async (req, res) => {
 
           return res.json({
             success: true,
-          //  mobile: mobileNumber,
+            mobile: mobileNumber,
             message: "OTP sent successfully",
            // otp, // ⚠️ remove in production
           });
@@ -152,6 +167,10 @@ register: async (req, res) => {
           class_id,
           registration_type,
           center_id: registration_type === "offline" ? center_id : null,
+          father_name: fatherName,
+          mother_name: motherName,
+          dob,
+          address,
         };
 
         Customer.updateByMobile(mobileNumber, updateData, async (err) => {
@@ -177,7 +196,7 @@ register: async (req, res) => {
 
           return res.status(200).json({
             success: true,
-           // mobile: mobileNumber,
+            mobile: mobileNumber,
             message: "OTP sent successfully",
             //otp, // ⚠️ remove in production
           });

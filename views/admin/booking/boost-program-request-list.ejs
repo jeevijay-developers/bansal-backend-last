@@ -1,136 +1,175 @@
 <%- include('../layouts/header') %>
 
-<section class="content-body">
-  <div class="container-fluid">
-    <div class="row">
-      <div class="col-12">
-        <div class="card">
-          <div class="card-header d-flex align-items-center justify-content-between">
-            <h4 class="card-title mb-0"><%= title %></h4>
-            <div class="row">
-              <div class="col-12 text-end">
+  <section class="content-body">
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-12">
+          <div class="card">
+            <div class="card-header d-flex align-items-center justify-content-between">
+              <h4 class="card-title mb-0">
+                <%= title %>
+              </h4>
+              <div class="row">
+                <div class="col-12 text-end">
 
-                <button type="button" id="backButton" class="btn btn-primary btn-sm">
-                  <i class="fa fa-arrow-left"></i>
-                </button>
-              
+                  <button type="button" id="backButton" class="btn btn-primary btn-sm">
+                    <i class="fa fa-arrow-left"></i>
+                  </button>
+
+                </div>
+
               </div>
-            
+
             </div>
-          
-          </div>
 
-          <div class="card-body">
-           <div class="row align-items-end g-2 mb-3 filter-tab">
- <div class="col-md-2">
-    <label>From Date</label>
-    <input type="date" name="from_date" id="from_date" value="<%= req.query.from_date || '' %>" class="form-control">
-  </div>
-  
-   <div class="col-md-2">
-    <label>To Date</label>
-    <input type="date" name="to_date" id="to_date" value="<%= req.query.to_date || '' %>" class="form-control">
-  </div>
- 
-  <div class="col-md-3">
-  <label>Payment Status</label>
-    <select name="payment_status" id="payment_status" class="form-select form-control">
-      <option value="">All</option>
-      <option value="pending" <%= req.query.payment_status === 'pending' ? 'selected' : '' %>>Pending</option>
-      <option value="success" <%= req.query.payment_status === 'success' ? 'selected' : '' %>>Success</option>
-    </select>
-</div>
+            <div class="card-body">
+              <div class="row align-items-end g-2 mb-3 filter-tab">
+                <div class="col-md-2">
+                  <label>From Date</label>
+                  <input type="date" name="from_date" id="from_date" value="<%= req.query.from_date || '' %>"
+                    class="form-control">
+                </div>
 
-  </br>
+                <div class="col-md-2">
+                  <label>To Date</label>
+                  <input type="date" name="to_date" id="to_date" value="<%= req.query.to_date || '' %>"
+                    class="form-control">
+                </div>
 
-  <div class="col-md-2  text-center">
-    <button id="filterBtn" class="btn btn-primary me-2">Filter</button>
-    <a href="/admin/boost-program-requests" class="btn btn-secondary">Reset</a>
-  </div>
-</div>
-            <div class="table-responsive">
-              <table id="" class="table display table-responsive-lg">
-                <thead>
-    <tr>
-      <th>ID</th>
-      <th>Name</th>
-      <th>Mobile</th>
-     <% if (req.query.payment_status === "success") { %>
-  <th>Transaction Id</th>
-<% } %>
-      <th>Program Date</th>
-      <th>Price</th>
-       <th>Payment Status</th>
-      
-      <th>Date</th>
-       <th>Action</th> <!-- Added Action column -->
-    </tr>
-  </thead>
-  <tbody>
-    <% if (request_data && request_data.length > 0) { %>
-      <% request_data.forEach((r) => { %>
-        <tr>
-          <td><%= r.id %></td>
-          <td><%= r.name %></td>
-           <td><%= r.mobile %></td>
-                    <% if (req.query.payment_status === "success") { %>
-          <td><%= r.transaction_id %></td>
-         <% } %>
-          <td><%= r.program_date %></td>
-          <td><%= r.price %></td>
-          <td><%= r.payment_status %></td>
-          
-          <!-- <td><%= new Date(r.created_at).toLocaleString() %></td> -->
+                <div class="col-md-3">
+                  <label>Payment Status</label>
+                  <select name="payment_status" id="payment_status" class="form-select form-control">
+                    <option value="">All</option>
+                    <option value="pending" <%=req.query.payment_status==='pending' ? 'selected' : '' %>>Pending
+                    </option>
+                    <option value="complete" <%=req.query.payment_status==='complete' ? 'selected' : '' %>>Complete
+                    </option>
+                  </select>
+                </div>
 
-                                <td>
-  <%= r.created_at
-        ? new Date(r.created_at).toLocaleString('en-GB', { 
-            day: '2-digit', 
-            month: '2-digit', 
-            year: 'numeric', 
-            hour: '2-digit', 
-            minute: '2-digit', 
-            hour12: true 
-          }) 
-        : '-' %>
-</td>
-           <td>
-            <a href="/admin/boost-program-request-details/<%= r.id %>" class="btn btn-sm btn-info">
-              <i class="fa fa-eye"></i> Details
-            </a>
-          </td>
-        </tr>
-      <% }) %>
-    <% } else { %>
-      <tr>
-        <td colspan="8" style="text-align: center;">No records found.</td>
-      </tr>
-    <% } %>
-  </tbody>
-</table>
+                </br>
+
+                <div class="col-md-3  text-center">
+                  <button id="filterBtn" class="btn btn-primary me-2">Filter</button>
+                  <a href="/admin/boost-program-requests" class="btn btn-secondary me-2">Reset</a>
+                  <% if (permissions && permissions.includes('BOOST request list export')) { %>
+                  <button id="exportBtn" class="btn btn-success">
+                    <i class="fa fa-download"></i> Export CSV
+                  </button>
+                  <% } %>
+                </div>
+              </div>
+              <div class="table-responsive">
+                <table id="" class="table display table-responsive-lg">
+                  <thead>
+                    <tr>
+                      <th>ID</th>
+                      <th>Name</th>
+                      <th>Mobile</th>
+                      <th>Class</th>
+                      <% if (req.query.payment_status==="complete" ) { %>
+                        <th>Transaction Id</th>
+                        <% } %>
+                          <th>Program Date</th>
+                          <th>Price</th>
+                          <th>Payment Status</th>
+
+                          <th>Date</th>
+                          <th>Action</th> <!-- Added Action column -->
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <% if (request_data && request_data.length> 0) { %>
+                      <% request_data.forEach((r)=> { %>
+                        <tr>
+                          <td>
+                            <%= r.id %>
+                          </td>
+                          <td>
+                            <%= r.name %>
+                          </td>
+                          <td>
+                            <%= r.mobile %>
+                          </td>
+                          <td>
+                            <%= r.class || '-' %>
+                          </td>
+                          <% if (req.query.payment_status==="complete" ) { %>
+                            <td>
+                              <%= r.transaction_id %>
+                            </td>
+                            <% } %>
+                              <td>
+                                <%= r.program_date %>
+                              </td>
+                              <td>
+                                <%= r.price %>
+                              </td>
+                              <td>
+                                <%= r.payment_status %>
+                              </td>
+
+                              <!-- <td><%= new Date(r.created_at).toLocaleString() %></td> -->
+
+                              <td>
+                                <%= r.created_at ? new Date(r.created_at).toLocaleString('en-GB', { day: '2-digit' ,
+                                  month: '2-digit' , year: 'numeric' , hour: '2-digit' , minute: '2-digit' , hour12:
+                                  true }) : '-' %>
+                              </td>
+                              <td>
+                                <a href="/admin/boost-program-request-details/<%= r.id %>" class="btn btn-sm btn-info">
+                                  <i class="fa fa-eye"></i> Details
+                                </a>
+                              </td>
+                        </tr>
+                        <% }) %>
+                          <% } else { %>
+                            <tr>
+                              <td colspan="9" style="text-align: center;">No records found.</td>
+                            </tr>
+                            <% } %>
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         </div>
       </div>
     </div>
-  </div>
-</section>
+  </section>
 
-<%- include('../layouts/footer') %>
+  <%- include('../layouts/footer') %>
 
-<script>
-document.getElementById("filterBtn").addEventListener("click", () => {
-  const params = new URLSearchParams();
+    <script>
+      document.getElementById("filterBtn").addEventListener("click", () => {
+        const params = new URLSearchParams();
 
-  const from_date = document.getElementById("from_date").value;
-  const to_date = document.getElementById("to_date").value;
-  const payment_status = document.getElementById("payment_status").value;
+        const from_date = document.getElementById("from_date").value;
+        const to_date = document.getElementById("to_date").value;
+        const payment_status = document.getElementById("payment_status").value;
 
-  if (from_date) params.append("from_date", from_date);
-  if (to_date) params.append("to_date", to_date);
-  if (payment_status) params.append("payment_status", payment_status);
+        if (from_date) params.append("from_date", from_date);
+        if (to_date) params.append("to_date", to_date);
+        if (payment_status) params.append("payment_status", payment_status);
 
-  window.location.href = "/admin/boost-program-requests?" + params.toString();
-});
-</script>
+        window.location.href = "/admin/boost-program-requests?" + params.toString();
+      });
 
+      // Export CSV button
+      const exportBtn = document.getElementById("exportBtn");
+      if (exportBtn) {
+        exportBtn.addEventListener("click", () => {
+          const params = new URLSearchParams();
+
+          const from_date = document.getElementById("from_date").value;
+          const to_date = document.getElementById("to_date").value;
+          const payment_status = document.getElementById("payment_status").value;
+
+          if (from_date) params.append("from_date", from_date);
+          if (to_date) params.append("to_date", to_date);
+          if (payment_status) params.append("payment_status", payment_status);
+
+          window.location.href = "/admin/boost-program-requests/export?" + params.toString();
+        });
+      }
+    </script>

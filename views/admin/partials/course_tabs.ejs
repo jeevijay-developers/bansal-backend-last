@@ -69,6 +69,11 @@ margin-bottom: 15px;;
           Overview
         </a>
       </li>
+      <% 
+        // Show all tabs if canAccessAllTabs is undefined (for backward compatibility) or true
+        const showAllTabs = typeof canAccessAllTabs === 'undefined' || canAccessAllTabs === true;
+      %>
+      <% if (showAllTabs) { %>
       <li class="nav-item">
         <a class="nav-link" href="/admin/course-subject-list/<%= course.id %>">
           Subject <span class="badge"><%= subjectCount %></span>
@@ -105,6 +110,13 @@ margin-bottom: 15px;;
           Live Class <span class="badge"><%= liveClassCount %></span>
         </a>
       </li>
+      <% } else { %>
+      <li class="nav-item">
+        <span class="nav-link" style="cursor: not-allowed; opacity: 0.6;">
+          <i class="fa fa-lock"></i> Additional tabs available for Super Admin only
+        </span>
+      </li>
+      <% } %>
     </ul>
   </div>
 </div>

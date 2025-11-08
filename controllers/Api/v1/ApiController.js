@@ -6839,13 +6839,14 @@ const [orders] = await pool.promise().query(
 boostProgramDetails: async (req, res) => {
   try {
     const [rows] = await pool.promise().query(
-      `SELECT title, program_date, price, status 
+      `SELECT id, title, type, program_date, price, status 
        FROM programs
-       WHERE type = 'boost'
+       WHERE type = 'boost' 
+       AND status = 1 
+       AND deleted_at IS NULL
        ORDER BY program_date ASC
        `
     );
-
     res.status(200).json({
       success: true,
       message: rows.length ? "Program found" : "No upcoming program",

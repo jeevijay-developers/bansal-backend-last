@@ -1,5 +1,115 @@
 <%- include('../layouts/header') %>
 
+<style>
+  .table-professional {
+    min-width: 100%;
+    white-space: nowrap;
+  }
+
+  .table-professional th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #495057;
+    padding: 14px 12px;
+    border-bottom: 2px solid #dee2e6;
+    vertical-align: middle;
+  }
+
+  .table-professional td {
+    padding: 12px;
+    vertical-align: middle;
+    font-size: 14px;
+    color: #212529;
+    border-bottom: 1px solid #e9ecef;
+  }
+
+  .table-professional tbody tr {
+    transition: background-color 0.2s ease;
+  }
+
+  .table-professional tbody tr:hover {
+    background-color: #f1f3f5;
+  }
+
+  .badge-status {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 6px 12px;
+    border-radius: 4px;
+    text-transform: capitalize;
+    letter-spacing: 0.3px;
+  }
+
+  .badge-complete {
+    background-color: #d4edda;
+    color: #155724;
+  }
+
+  .badge-pending {
+    background-color: #fff3cd;
+    color: #856404;
+  }
+
+  .badge-failed {
+    background-color: #f8d7da;
+    color: #721c24;
+  }
+
+  .transaction-id {
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    color: #6c757d;
+    background-color: #f8f9fa;
+    padding: 4px 8px;
+    border-radius: 3px;
+  }
+
+  .amount {
+    font-weight: 600;
+    color: #28a745;
+    font-size: 14px;
+  }
+
+  .customer-name {
+    font-weight: 500;
+    color: #212529;
+  }
+
+  .course-name {
+    color: #495057;
+    max-width: 250px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .order-date {
+    font-size: 13px;
+    color: #6c757d;
+  }
+
+  .btn-action {
+    padding: 6px 12px;
+    font-size: 13px;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+  }
+
+  .btn-action:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+
+  .serial-number {
+    font-weight: 600;
+    color: #6c757d;
+    font-size: 13px;
+  }
+</style>
+
 <section class="content-body">
   <div class="container-fluid">
     <div class="row">
@@ -7,61 +117,91 @@
         <div class="card">
           <div class="card-header d-flex align-items-center justify-content-between">
             <h4 class="card-title mb-0"><%= page_name %></h4>
-            <div class="row">
-              <div class="col-12 text-end">
-               
-                <button type="button" id="backButton" class="btn btn-primary btn-sm">
-                  <i class="fa fa-arrow-left"></i>
-                </button>
-              </div>
+            <div>
+              <button type="button" id="backButton" class="btn btn-primary btn-sm">
+                <i class="fa fa-arrow-left me-1"></i> Back
+              </button>
             </div>
           </div>
 
           <div class="card-body">
             <div class="table-responsive">
-              <table id="example3" class="display table-responsive-lg">
+              <table id="example3" class="table table-professional table-hover">
                 <thead>
                   <tr>
-                    <th>Sr.No #</th>
-                    <th>Customer Name</th>
-                    <th>Transaction Id</th>
-                    <th>Course Name</th>
-                    <th>Price</th>
-                    <th>Order Date</th>
-                    <th>Status</th>
-                    <th>Actions</th>
+                    <th style="width: 60px;">Sr. No</th>
+                    <th style="min-width: 150px;">Customer Name</th>
+                    <th style="min-width: 130px;">Email</th>
+                    <th style="min-width: 120px;">Mobile</th>
+                    <th style="min-width: 150px;">Father Name</th>
+                    <th style="min-width: 150px;">Mother Name</th>
+                    <th style="min-width: 120px;">DOB</th>
+                    <th style="min-width: 200px;">Address</th>
+                    <th style="min-width: 150px;">Transaction ID</th>
+                    <th style="min-width: 200px;">Course Name</th>
+                    <th style="width: 100px;">Price</th>
+                    <th style="min-width: 140px;">Order Date</th>
+                    <th style="width: 100px;">Status</th>
+                    <th style="width: 80px;">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
-                  <% bookings.forEach((booking, index) => { %>
+                  <% if (bookings && bookings.length > 0) { %>
+                    <% bookings.forEach((booking, index) => { %>
+                      <tr>
+                        <td class="serial-number"><%= index + 1 %></td>
+                        <td class="customer-name"><%= booking.customer_name || 'N/A' %></td>
+                        <td><%= booking.email || '-' %></td>
+                        <td><%= booking.mobile || '-' %></td>
+                        <td><%= booking.father_name || '-' %></td>
+                        <td><%= booking.mother_name || '-' %></td>
+                        <td><%= booking.dob ? new Date(booking.dob).toLocaleDateString('en-GB') : '-' %></td>
+                        <td style="max-width: 200px; white-space: normal;"><%= booking.address || '-' %></td>
+                        <td><span class="transaction-id"><%= booking.transaction_id || '-' %></span></td>
+                        <td class="course-name" title="<%= booking.course_name %>"><%= booking.course_name || '-' %></td>
+                        <td class="amount">₹<%= booking.total_amount ? booking.total_amount.toFixed(2) : '0.00' %></td>
+                        <td class="order-date">
+                          <%= booking.created_at
+                                ? new Date(booking.created_at).toLocaleString('en-GB', { 
+                                    day: '2-digit', 
+                                    month: '2-digit', 
+                                    year: 'numeric', 
+                                    hour: '2-digit', 
+                                    minute: '2-digit', 
+                                    hour12: true 
+                                  }) 
+                                : '-' %>
+                        </td>
+                        <td>
+                          <% 
+                            let statusClass = 'badge-pending';
+                            let statusText = booking.payment_status || 'pending';
+                            
+                            if (statusText.toLowerCase() === 'complete' || statusText.toLowerCase() === 'completed' || statusText.toLowerCase() === 'success') {
+                              statusClass = 'badge-complete';
+                            } else if (statusText.toLowerCase() === 'failed' || statusText.toLowerCase() === 'cancelled') {
+                              statusClass = 'badge-failed';
+                            }
+                          %>
+                          <span class="badge badge-status <%= statusClass %>"><%= statusText %></span>
+                        </td>
+                        <td>
+                          <a href="/admin/booking-details/<%= booking.id %>" 
+                             class="btn btn-primary btn-action btn-sm" 
+                             title="View Details">
+                            <i class="fas fa-eye"></i>
+                          </a>
+                        </td>
+                      </tr>
+                    <% }); %>
+                  <% } else { %>
                     <tr>
-                      <td><%= index + 1 %></td>
-                      <td><%= booking.customer_name %></td>
-                      <td><%= booking.transaction_id %></td>
-                      <td><%= booking.course_name %></td>
-                      <td><%= booking.total_amount.toFixed(2) %></td>
-                      <!-- <td><%= new Date(booking.created_at).toLocaleDateString("en-GB") %></td> -->
-
-                       <td>
-  <%= booking.created_at
-        ? new Date(booking.created_at).toLocaleString('en-GB', { 
-            day: '2-digit', 
-            month: '2-digit', 
-            year: 'numeric', 
-            hour: '2-digit', 
-            minute: '2-digit', 
-            hour12: true 
-          }) 
-        : '-' %>
-</td>
-                      <td><%= booking.payment_status %></td>
-                      <td>
-                        <a href="/admin/booking-details/<%= booking.id %>" class="btn btn-primary shadow btn-xs sharp me-1">
-                          <i class="fas fa-eye"></i>
-                        </a>
+                      <td colspan="14" class="text-center py-4">
+                        <i class="fas fa-inbox fa-2x text-muted mb-2"></i>
+                        <p class="text-muted mb-0">No test series orders found</p>
                       </td>
                     </tr>
-                  <% }); %>
+                  <% } %>
                 </tbody>
               </table>
             </div>
@@ -73,5 +213,11 @@
 </section>
 
 <%- include('../layouts/footer') %>
+
+<script>
+  document.getElementById("backButton").addEventListener("click", () => {
+    window.history.back();
+  });
+</script>
 
 
