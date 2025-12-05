@@ -20,7 +20,7 @@ class CenterModel {
 //   });
 // }
 
-static async list(status = null) {
+static async list(status = null, limit = null, offset = null) {
   let query = `
     SELECT centers.*, servicable_cities.title
     FROM centers
@@ -37,10 +37,38 @@ static async list(status = null) {
 
   query += ` ORDER BY centers.id DESC `;
 
+  // Add pagination if limit and offset are provided
+  if (limit !== null && offset !== null) {
+    query += ` LIMIT ? OFFSET ? `;
+  }
+
+  return new Promise((resolve, reject) => {
+    const params = (limit !== null && offset !== null) ? [limit, offset] : [];
+    pool.query(query, params, (err, results) => {
+      if (err) return reject(err);
+      resolve(results);
+    });
+  });
+}
+
+static async count(status = null) {
+  let query = `
+    SELECT COUNT(*) as total
+    FROM centers
+    WHERE 1=1
+  `;
+
+  // ✅ Apply condition based on status
+  if (status === "trashed") {
+    query += ` AND centers.deleted_at IS NOT NULL `;
+  } else {
+    query += ` AND centers.deleted_at IS NULL `;
+  }
+
   return new Promise((resolve, reject) => {
     pool.query(query, (err, results) => {
       if (err) return reject(err);
-      resolve(results);
+      resolve(results[0].total);
     });
   });
 }

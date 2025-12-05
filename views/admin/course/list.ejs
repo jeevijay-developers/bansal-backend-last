@@ -1,5 +1,139 @@
 <%- include('../layouts/header') %>
 
+<style>
+  /* Card styling */
+  .card {
+    border: none;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+    border-radius: 10px;
+  }
+  
+  .card-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 10px 10px 0 0 !important;
+    padding: 1.25rem;
+  }
+  
+  .card-header h3 {
+    color: white !important;
+    margin: 0;
+  }
+  
+  /* Filter buttons */
+  .card-header .btn {
+    border: 2px solid white;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    margin-bottom: 0.5rem;
+  }
+  
+  .card-header .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+  }
+  
+  .card-header .btn-primary {
+    background: white;
+    color: #667eea;
+  }
+  
+  .card-header .btn-default {
+    background: transparent;
+    color: white;
+  }
+  
+  /* Course cards */
+  .course-item {
+    transition: all 0.3s ease;
+  }
+  
+  .course-item .card {
+    height: 100%;
+    transition: all 0.3s ease;
+  }
+  
+  .course-item .card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+  }
+  
+  .course-item img {
+    transition: transform 0.3s ease;
+  }
+  
+  .course-item:hover img {
+    transform: scale(1.05);
+  }
+  
+  /* Badges */
+  .badge {
+    padding: 0.35em 0.65em;
+    font-size: 0.875rem;
+    font-weight: 500;
+  }
+  
+  /* Action buttons */
+  .btn-sm {
+    transition: all 0.3s ease;
+  }
+  
+  .btn-sm:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  }
+  
+  /* Bulk action buttons */
+  #bulkDeleteBtn,
+  #bulkRestoreBtn,
+  #exportBtn {
+    font-weight: 600;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+  
+  #bulkDeleteBtn:hover:not(:disabled),
+  #bulkRestoreBtn:hover:not(:disabled),
+  #exportBtn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  }
+  
+  #bulkDeleteBtn:disabled,
+  #bulkRestoreBtn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  
+  /* View More button */
+  #viewMoreBtn {
+    font-weight: 600;
+    padding: 0.75rem 2rem;
+    font-size: 1rem;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    color: white;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 8px rgba(102, 126, 234, 0.3);
+  }
+  
+  #viewMoreBtn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(102, 126, 234, 0.4);
+  }
+  
+  /* Hidden courses */
+  .course-item.hidden {
+    display: none;
+  }
+  
+  /* Loading animation */
+  .loading {
+    opacity: 0.6;
+    pointer-events: none;
+  }
+</style>
+
   <div class="content-body">
     <div class="container-fluid">
       <div class="row">
@@ -77,8 +211,8 @@
 
                   </div>
                   <div id="sortable" class="row">
-                    <% customers.forEach((course)=> { %>
-                      <div class="col-md-4 mb-3 course-item" data-id="<%= course.id %>">
+                    <% customers.forEach((course, index)=> { %>
+                      <div class="col-md-4 mb-3 course-item <%= index >= 6 ? 'hidden' : '' %>" data-id="<%= course.id %>">
                         <div class="border card mb-4 shadow-sm border rounded-4 overflow-hidden">
                           <div class="card-body p-3" style="cursor:pointer">
                             <input type="checkbox" class="bulk-checkbox me-2" value="<%= course.id %>">
@@ -209,6 +343,15 @@
                       </div>
                       <% }); %>
                   </div>
+
+                  <!-- View More Button -->
+                  <% if (customers.length > 6) { %>
+                  <div class="text-center my-4">
+                    <button id="viewMoreBtn" class="btn btn-lg rounded-pill">
+                      <i class="fas fa-plus-circle me-2"></i>View More Courses
+                    </button>
+                  </div>
+                  <% } %>
 
                   <!-- Save Order Button -->
 
@@ -371,5 +514,51 @@
         } catch (err) {
           alert(err.message);
         }
+      });
+    </script>
+
+    <!-- View More Courses Functionality -->
+    <script>
+      $(document).ready(function() {
+        let currentlyVisible = 6;
+        const loadMoreCount = 12;
+        const allCourses = $('.course-item');
+        const totalCourses = allCourses.length;
+        const viewMoreBtn = $('#viewMoreBtn');
+
+        function updateButtonText() {
+          const hiddenCount = totalCourses - currentlyVisible;
+          if (hiddenCount > 0) {
+            const toShow = Math.min(loadMoreCount, hiddenCount);
+            viewMoreBtn.html(`<i class="fas fa-plus-circle me-2"></i>View ${toShow} More Courses`);
+          }
+        }
+
+        // Initialize button text
+        if (totalCourses > 6) {
+          updateButtonText();
+        }
+
+        viewMoreBtn.on('click', function() {
+          const hiddenCourses = $('.course-item.hidden');
+          const coursesToShow = hiddenCourses.slice(0, loadMoreCount);
+          
+          // Show courses with fade-in animation
+          coursesToShow.each(function(index) {
+            const course = $(this);
+            setTimeout(function() {
+              course.removeClass('hidden').hide().fadeIn(400);
+            }, index * 50);
+          });
+
+          currentlyVisible += coursesToShow.length;
+
+          // Update or hide button
+          if (currentlyVisible >= totalCourses) {
+            viewMoreBtn.fadeOut(300);
+          } else {
+            updateButtonText();
+          }
+        });
       });
     </script>

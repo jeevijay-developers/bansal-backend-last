@@ -19,16 +19,39 @@ const List = async (req, res) => {
     const page_name =
       req.query.status === "trashed" ? "Trashed Service List" : "Service Listing";
 
-    // Define the SQL query to fetch services
+    // Pagination parameters
+    const page = parseInt(req.query.page) || 1;
+    const limit = 15;
+    const offset = (page - 1) * limit;
+
+    // Count query for pagination
+    const countQuery = `
+      SELECT COUNT(*) as total FROM services
+      ${where}
+    `;
+
+    // Get total count
+    const totalCount = await new Promise((resolve, reject) => {
+      pool.query(countQuery, (err, result) => {
+        if (err) {
+          req.flash("error", err.message);
+          return reject(err);
+        }
+        resolve(result[0].total);
+      });
+    });
+
+    // Define the SQL query to fetch services with pagination
     const query = `
       SELECT * FROM services
       ${where}
       ORDER BY services.created_at DESC
+      LIMIT ? OFFSET ?
     `;
 
     // Fetch data from the database
     const services = await new Promise((resolve, reject) => {
-      pool.query(query, (err, result) => {
+      pool.query(query, [limit, offset], (err, result) => {
         if (err) {
           req.flash("error", err.message);
           return reject(err);
@@ -36,6 +59,17 @@ const List = async (req, res) => {
         resolve(result);
       });
     });
+
+    // Calculate pagination data
+    const totalPages = Math.ceil(totalCount / limit);
+    const pagination = {
+      currentPage: page,
+      totalPages: totalPages,
+      totalRecords: totalCount,
+      limit: limit,
+      hasNext: page < totalPages,
+      hasPrev: page > 1
+    };
 
     // Render the list view with services data
     res.render("admin/service/list", {
@@ -49,6 +83,8 @@ const List = async (req, res) => {
       actions_url: "/admin/service", // pass this to dynamically build URLs in EJS
       trashed_list_url: "/admin/service-list/?status=trashed",
       create_url: "/admin/service-create",
+      pagination: pagination,
+      permissions: req.session.permissions || []
     });
   } catch (error) {
     console.error("Service List Error:", error);

@@ -29,7 +29,7 @@
     <label for="course">Course Name</label>
    <select name="course[]" multiple class="form-control select2">
   <% courses.forEach(function(course) { %>
-    <option value="<%= course.id %>" <%= course.is_paid ? "selected" : "" %>>
+    <option value="<%= course.id %>" <%= course.is_paid == 1 ? "selected" : "" %>>
       <%= course.course_name %> 
     </option>
   <% }); %>
@@ -64,8 +64,8 @@
 </div>
 <div class="col-md-6">
                                         <div class="form-group">
-                                        <label for="mobile">City</label>
-                                        <input type="text" name="city" id="city" class="form-control"  maxlength="10"  value="<%= customer ? customer.city : '' %>"  placeholder="Enter Your City">
+                                        <label for="city">City</label>
+                                        <input type="text" name="city" id="city" class="form-control" value="<%= customer && customer.city ? customer.city : '' %>" placeholder="Enter Your City">
                                         <div class="invalid-feedback"></div>
                                     </div>
                                     </div>
@@ -129,8 +129,8 @@
   </div>
 <% } else { %>
   <!-- For Center users, set hidden values -->
+  <!-- Note: center_id will be auto-assigned by the controller based on the logged-in center user -->
   <input type="hidden" name="registration_type" value="offline">
-  <input type="hidden" name="center_id" value="<%= user.id %>">
 <% } %>
 
                                     <div class="col-md-6">

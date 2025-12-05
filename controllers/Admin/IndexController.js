@@ -46,23 +46,49 @@ const [[{ active_courses }]] = await pool.promise().query(query, queryParams);
         `SELECT COUNT(*) AS active_centers FROM centers WHERE status = 1 AND deleted_at IS NULL`
       );
 
-    // const [[{ active_students }]] = await pool
-    //   .promise()
-    //   .query(
-    //     `SELECT COUNT(*) AS active_students FROM front_users WHERE status = 1 AND deleted_at IS NULL`
-    //   );
+    // Fetch active students count with proper center filtering
+    let studentQuery = `SELECT COUNT(*) AS active_students FROM front_users WHERE status = 1 AND deleted_at IS NULL`;
+    let studentParams = [];
 
-      let studentQuery = `SELECT COUNT(*) AS active_students FROM front_users WHERE status = 1 AND deleted_at IS NULL`;
-        let studentParams = [];
-
-        // Example: role-based filter
-        if (userRoles.includes("Center")) {
-        studentQuery += ` AND center_id = ?`; // assuming you have this field
-        studentParams.push(userId);
+    // Role-based filter for center users
+    if (userRoles.includes("Center")) {
+      // Get center_id for this center user (same logic as List function)
+      const [userData] = await pool.promise().query(
+        `SELECT center_id, name FROM users WHERE id = ? LIMIT 1`,
+        [userId]
+      );
+      
+      let centerIdToUse = null;
+      
+      if (userData.length > 0 && userData[0].center_id) {
+        // User has direct center_id
+        centerIdToUse = userData[0].center_id;
+      } else if (userData.length > 0 && userData[0].name) {
+        // Fallback to name matching
+        const [centerMatch] = await pool.promise().query(
+          `SELECT id FROM centers 
+           WHERE TRIM(name) COLLATE utf8mb4_unicode_ci = TRIM(?) COLLATE utf8mb4_unicode_ci 
+           AND deleted_at IS NULL
+           LIMIT 1`,
+          [userData[0].name]
+        );
+        
+        if (centerMatch.length > 0) {
+          centerIdToUse = centerMatch[0].id;
         }
+      }
+      
+      if (centerIdToUse) {
+        studentQuery += ` AND center_id = ?`;
+        studentParams.push(centerIdToUse);
+      } else {
+        // If no center found, show 0 students
+        studentQuery += ` AND center_id = -1`;
+      }
+    }
 
-// Execute query
-        const [[{ active_students }]] = await pool.promise().query(studentQuery, studentParams);
+    // Execute query
+    const [[{ active_students }]] = await pool.promise().query(studentQuery, studentParams);
 
     const [[{ active_test_series }]] = await pool
       .promise()

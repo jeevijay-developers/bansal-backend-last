@@ -388,7 +388,7 @@ router.post("/get-video-gallery", ApiController.getVideoGallery);
 router.post("/get-achievement-list", ApiController.getAchievementList);
 
 router.post("/boost-program-details", ApiController.boostProgramDetails);
-router.post("/get-bftp-date", ApiController.getBTPDate);
+router.post("/get-bftp-date", ApiController.getBFTPDate);
 
 // router.post('/test-question-list', authenticateCustomer, ApiController.testQuestionList )
 

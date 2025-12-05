@@ -6863,27 +6863,37 @@ boostProgramDetails: async (req, res) => {
 },
 
 
-getBTPDate: async (req, res) => {
+getBFTPDate: async (req, res) => {
   try {
-    // Example: fixed program ID = 2
+    console.log("\n=== getBFTPDate API Called ===");
+    
     const [rows] = await pool
       .promise()
       .query(
-        `SELECT title, program_date, price, status 
+        `SELECT * 
          FROM programs 
-         WHERE id = ? 
+         WHERE type = 'bftp'
+         AND status = 1
+         AND deleted_at IS NULL
+         AND program_date >= CURDATE()
          ORDER BY program_date ASC 
-         LIMIT 1`,
-        [2] // parameterized value
+         LIMIT 1`
       );
-
+    
+    console.log("Query result:", rows);
+    console.log("Found rows:", rows.length);
+    
+    const result = rows.length > 0 ? rows[0] : null;
+    
+    console.log("Returning data:", result);
+    
     res.status(200).json({
       success: true,
-      message: rows.length ? "Program found" : "No upcoming program",
-      data: rows,
+      message: result ? "Program found" : "No upcoming program",
+      data: result,
     });
   } catch (error) {
-    console.error("Error fetching boost program:", error.message);
+    console.error("Error fetching BFTP program:", error.message);
     res.status(500).json({
       success: false,
       message: "Server error",

@@ -56,24 +56,51 @@ const List = async (req, res) => {
     const userRoles = req.session.userRole || [];
     const userId = req.session.userId; // must exist in session
 
+    // Pagination parameters
+    const page = parseInt(req.query.page) || 1;
+    const limit = 15;
+    const offset = (page - 1) * limit;
+
     let where =
       req.query.status === "trashed"
         ? "WHERE `live_test`.deleted_at IS NOT NULL"
         : "WHERE `live_test`.deleted_at IS NULL";
 
     const queryParams = [];
+    const countParams = [];
 
     // ✅ Always filter by test_location
     where += " AND live_test.test_location = ?";
     queryParams.push("live-test");
+    countParams.push("live-test");
 
     // ✅ If user role is Center, filter by created_by
     if (userRoles.includes("Center")) {
       where += " AND `live_test`.created_by = ?";
       queryParams.push(userId);
+      countParams.push(userId);
     }
 
-    const query = `${withCategory()} ${where} ORDER BY \`live_test\`.id DESC`;
+    // Count query for pagination
+    const countQuery = `
+      SELECT COUNT(*) as total 
+      FROM live_test 
+      ${where}
+    `;
+
+    // Get total count
+    const totalCount = await new Promise((resolve, reject) => {
+      pool.query(countQuery, countParams, (err, result) => {
+        if (err) {
+          req.flash("error", err.message);
+          return reject(err);
+        }
+        resolve(result[0].total);
+      });
+    });
+
+    const query = `${withCategory()} ${where} ORDER BY \`live_test\`.id DESC LIMIT ? OFFSET ?`;
+    queryParams.push(limit, offset);
 
     const page_name =
       req.query.status === "trashed"
@@ -90,6 +117,17 @@ const List = async (req, res) => {
       });
     });
 
+    // Calculate pagination data
+    const totalPages = Math.ceil(totalCount / limit);
+    const pagination = {
+      currentPage: page,
+      totalPages: totalPages,
+      totalRecords: totalCount,
+      limit: limit,
+      hasNext: page < totalPages,
+      hasPrev: page > 1
+    };
+
     res.render("admin/live-test/list", {
       success: req.flash("success"),
       error: req.flash("error"),
@@ -99,6 +137,7 @@ const List = async (req, res) => {
       list_url: "/admin/live-test-list",
       trashed_list_url: "/admin/live-test-list/?status=trashed",
       create_url: "/admin/live-test-create",
+      pagination: pagination,
     });
 
   } catch (error) {

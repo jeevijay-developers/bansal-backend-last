@@ -112,17 +112,14 @@
   </thead>
   <tbody>
     <% if (request_data && request_data.length > 0) { %>
-      <% request_data.forEach((r) => { %>
+      <% request_data.forEach((r, index) => { %>
         <tr>
-          <td><%= r.id %></td>
+          <td><%= pagination ? (pagination.currentPage - 1) * pagination.limit + index + 1 : index + 1 %></td>
           <td><%= r.name %></td>
           <td><%= r.email %></td>
           <td><%= r.mobile %></td>
           <td><%= r.center_name %></td>
           <td><%= r.message %></td>
-<!--         
-          <td><%= new Date(r.created_at).toLocaleString() %></td> -->
-
           <td>
   <%= r.created_at
         ? new Date(r.created_at).toLocaleString('en-GB', { 
@@ -139,12 +136,64 @@
       <% }) %>
     <% } else { %>
       <tr>
-        <td colspan="8" style="text-align: center;">No records found.</td>
+        <td colspan="7" style="text-align: center;">No records found.</td>
       </tr>
     <% } %>
   </tbody>
 </table>
             </div>
+            
+            <!-- Pagination -->
+            <% if (pagination && pagination.totalPages > 1) { %>
+              <div class="d-flex justify-content-between align-items-center mt-3">
+                <div>
+                  Showing <%= (pagination.currentPage - 1) * pagination.limit + 1 %> 
+                  to <%= Math.min(pagination.currentPage * pagination.limit, pagination.totalRecords) %> 
+                  of <%= pagination.totalRecords %> entries
+                </div>
+                
+                <nav>
+                  <ul class="pagination mb-0">
+                    <!-- First Page -->
+                    <li class="page-item <%= !pagination.hasPrev ? 'disabled' : '' %>">
+                      <a class="page-link" href="#" data-page="1">First</a>
+                    </li>
+                    
+                    <!-- Previous Page -->
+                    <li class="page-item <%= !pagination.hasPrev ? 'disabled' : '' %>">
+                      <a class="page-link" href="#" data-page="<%= pagination.currentPage - 1 %>">Prev</a>
+                    </li>
+                    
+                    <!-- Page Numbers -->
+                    <% 
+                      const maxPages = 5;
+                      let startPage = Math.max(1, pagination.currentPage - Math.floor(maxPages / 2));
+                      let endPage = Math.min(pagination.totalPages, startPage + maxPages - 1);
+                      
+                      if (endPage - startPage < maxPages - 1) {
+                        startPage = Math.max(1, endPage - maxPages + 1);
+                      }
+                      
+                      for (let i = startPage; i <= endPage; i++) { 
+                    %>
+                      <li class="page-item <%= i === pagination.currentPage ? 'active' : '' %>">
+                        <a class="page-link" href="#" data-page="<%= i %>"><%= i %></a>
+                      </li>
+                    <% } %>
+                    
+                    <!-- Next Page -->
+                    <li class="page-item <%= !pagination.hasNext ? 'disabled' : '' %>">
+                      <a class="page-link" href="#" data-page="<%= pagination.currentPage + 1 %>">Next</a>
+                    </li>
+                    
+                    <!-- Last Page -->
+                    <li class="page-item <%= !pagination.hasNext ? 'disabled' : '' %>">
+                      <a class="page-link" href="#" data-page="<%= pagination.totalPages %>">Last</a>
+                    </li>
+                  </ul>
+                </nav>
+              </div>
+            <% } %>
           </div>
         </div>
       </div>
@@ -165,7 +214,28 @@ document.getElementById("filterBtn").addEventListener("click", () => {
   if (from_date) params.append("from_date", from_date);
   if (to_date) params.append("to_date", to_date);
   if (center_id) params.append("center_id", center_id);
+  
+  // Reset to page 1 when filtering
+  params.append("page", "1");
 
   window.location.href = "<%= center_enquiries_list %>?" + params.toString();
+});
+
+// Handle pagination clicks
+document.querySelectorAll('.pagination .page-link').forEach(link => {
+  link.addEventListener('click', function(e) {
+    e.preventDefault();
+    
+    if (this.parentElement.classList.contains('disabled') || 
+        this.parentElement.classList.contains('active')) {
+      return;
+    }
+    
+    const page = this.getAttribute('data-page');
+    const params = new URLSearchParams(window.location.search);
+    params.set('page', page);
+    
+    window.location.href = "<%= center_enquiries_list %>?" + params.toString();
+  });
 });
 </script>

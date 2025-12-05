@@ -20,9 +20,21 @@ const List = async (req, res) => {
     const fromDate = req.query.from_date;
     const toDate = req.query.to_date;
 
+    // Pagination parameters
+    const page = parseInt(req.query.page) || 1;
+    const limit = 15;
+    const offset = (page - 1) * limit;
+
     const userRoles = req.session.userRole || [];
     const userId = req.user.id;
     const queryParams = [];
+    const countParams = [];
+
+    let countQuery = `
+  SELECT COUNT(*) as total
+  FROM front_users fu
+  WHERE 1 = 1
+`;
 
     let getQuery = `
   SELECT 
@@ -48,78 +60,154 @@ const List = async (req, res) => {
 
     // Filter by center for center users
     if (userRoles.includes("Center")) {
-      // Get user's name and find matching center ID
-      const [userInfo] = await pool.promise().query(
-        `SELECT u.name, c.id AS center_id 
-         FROM users u
-         LEFT JOIN centers c ON u.name COLLATE utf8mb4_unicode_ci = c.name COLLATE utf8mb4_unicode_ci
-         WHERE u.id = ? AND c.deleted_at IS NULL
-         LIMIT 1`,
+      console.log('🔍 ===== CENTER USER DEBUGGING START =====');
+      console.log('🔍 Center user detected - User ID:', userId);
+      
+      // First, get user info
+      const [userData] = await pool.promise().query(
+        `SELECT id, name, email, role_id, center_id FROM users WHERE id = ? LIMIT 1`,
         [userId]
       );
       
-      console.log('Center user login - User ID:', userId);
-      console.log('Center user info:', userInfo);
-      console.log('User roles:', userRoles);
+      console.log('📋 User data:', userData[0]);
       
-      if (userInfo.length > 0 && userInfo[0].center_id) {
-        getQuery += ` AND fu.center_id = ? `;
-        queryParams.push(userInfo[0].center_id);
-        console.log('✓ Filtering students by center ID:', userInfo[0].center_id);
-        console.log('✓ Query params:', queryParams);
+      // Check if center with ID 63 exists
+      const [tirupatiCenter] = await pool.promise().query(
+        `SELECT id, name, status, deleted_at FROM centers WHERE id = 63 LIMIT 1`
+      );
+      console.log('🏢 Tirupati Center (ID 63):', tirupatiCenter[0]);
+      
+      // Count students for center 63
+      const [studentCount] = await pool.promise().query(
+        `SELECT COUNT(*) as count FROM front_users WHERE center_id = 63 AND deleted_at IS NULL`
+      );
+      console.log('👥 Students in center 63:', studentCount[0].count);
+      
+      let centerIdToUse = null;
+      
+      // Check if user has direct center_id
+      if (userData.length > 0 && userData[0].center_id) {
+        centerIdToUse = userData[0].center_id;
+        console.log('✅ Found direct center_id in users table:', centerIdToUse);
       } else {
-        console.log('⚠️ WARNING: Center user has no matching center_id!');
-        console.log('⚠️ This means the user name does not match any center name');
-        // If no center match found, show no results (prevent showing all data)
-        getQuery += ` AND fu.center_id = -1 `; // This will match nothing
+        console.log('⚠️ No center_id in users table, trying name matching...');
+        
+        // Get user's name for matching
+        const userName = userData[0].name;
+        console.log('👤 User name to match: "' + userName + '"');
+        console.log('📏 User name length:', userName.length);
+        
+        // Try exact match with center name
+        const [nameMatch] = await pool.promise().query(
+          `SELECT u.name as user_name, c.id AS center_id, c.name AS center_name
+           FROM users u
+           LEFT JOIN centers c ON TRIM(u.name) COLLATE utf8mb4_unicode_ci = TRIM(c.name) COLLATE utf8mb4_unicode_ci
+           WHERE u.id = ? AND c.status = 1 AND c.deleted_at IS NULL
+           LIMIT 1`,
+          [userId]
+        );
+        
+        console.log('🔍 Name match result:', nameMatch[0]);
+        
+        if (nameMatch.length > 0 && nameMatch[0].center_id) {
+          centerIdToUse = nameMatch[0].center_id;
+          console.log('✅ Found center via name match:', centerIdToUse);
+          console.log('🏢 Matched center name: "' + nameMatch[0].center_name + '"');
+        } else {
+          console.log('❌ Name matching failed!');
+          
+          // Show centers that partially match
+          const [similarCenters] = await pool.promise().query(
+            `SELECT id, name FROM centers 
+             WHERE name LIKE ? AND status = 1 AND deleted_at IS NULL
+             ORDER BY name`,
+            ['%' + userName + '%']
+          );
+          console.log('🔎 Centers with similar names:', similarCenters);
+          
+          // Show all active centers
+          const [allCenters] = await pool.promise().query(
+            `SELECT id, name FROM centers WHERE status = 1 AND deleted_at IS NULL ORDER BY name LIMIT 10`
+          );
+          console.log('🏢 First 10 active centers:', allCenters);
+        }
       }
+      
+      if (centerIdToUse) {
+        countQuery += ` AND fu.center_id = ? `;
+        getQuery += ` AND fu.center_id = ? `;
+        countParams.push(centerIdToUse);
+        queryParams.push(centerIdToUse);
+        console.log('✅ Filtering students by center_id:', centerIdToUse);
+      } else {
+        console.log('❌ ERROR: Center user has no matching center_id!');
+        console.log('💡 SOLUTION: Either:');
+        console.log('   1. Add center_id=63 to users table for this user');
+        console.log('   2. Ensure user.name exactly matches center.name');
+        // Show no results for safety
+        countQuery += ` AND fu.center_id = -1 `;
+        getQuery += ` AND fu.center_id = -1 `;
+      }
+      
+      console.log('🔍 ===== CENTER USER DEBUGGING END =====');
     }
 
     if (status1 === "trashed") {
+      countQuery += ` AND fu.deleted_at IS NOT NULL `;
       getQuery += ` AND fu.deleted_at IS NOT NULL `;
     } else if (status1 === "active") {
+      countQuery += ` AND fu.deleted_at IS NULL AND fu.status = 1 `;
       getQuery += ` AND fu.deleted_at IS NULL AND fu.status = 1 `;
     } else if (status1 === "inactive") {
+      countQuery += ` AND fu.deleted_at IS NULL AND fu.status = 0 `;
       getQuery += ` AND fu.deleted_at IS NULL AND fu.status = 0 `;
     } 
   
     if (search) {
+      countQuery += ` AND (fu.name LIKE ? OR fu.mobile LIKE ? OR fu.email LIKE ?) `;
       getQuery += ` AND (fu.name LIKE ? OR fu.mobile LIKE ? OR fu.email LIKE ?) `;
+      countParams.push(searchTerm, searchTerm, searchTerm);
       queryParams.push(searchTerm, searchTerm, searchTerm);
     }
     
     if (centerFilter) {
+      countQuery += ` AND fu.center_id = ? `;
       getQuery += ` AND fu.center_id = ? `;
+      countParams.push(centerFilter);
       queryParams.push(centerFilter);
     }
 
     if (categoryFilter) {
+      countQuery += ` AND fu.category_id = ? `;
       getQuery += ` AND fu.category_id = ? `;
+      countParams.push(categoryFilter);
       queryParams.push(categoryFilter);
     }
 
     if (classFilter) {
+      countQuery += ` AND fu.class_id = ? `;
       getQuery += ` AND fu.class_id = ? `;
+      countParams.push(classFilter);
       queryParams.push(classFilter);
     }
 
     if (fromDate) {
+      countQuery += ` AND DATE(fu.created_at) >= ? `;
       getQuery += ` AND DATE(fu.created_at) >= ? `;
+      countParams.push(fromDate);
       queryParams.push(fromDate);
     }
 
     if (toDate) {
+      countQuery += ` AND DATE(fu.created_at) <= ? `;
       getQuery += ` AND DATE(fu.created_at) <= ? `;
+      countParams.push(toDate);
       queryParams.push(toDate);
     }
 
     getQuery += ` ORDER BY fu.id DESC `;
-
-    console.log('=== FINAL QUERY DEBUG ===');
-    console.log('User Roles:', userRoles);
-    console.log('Query:', getQuery);
-    console.log('Query Params:', queryParams);
-    console.log('========================');
+    getQuery += ` LIMIT ? OFFSET ? `;
+    queryParams.push(limit, offset);
 
     const page_name =
       status1 === "trashed"
@@ -128,19 +216,41 @@ const List = async (req, res) => {
         ? "Inactive Student List"
         : "Student List";
 
+    // Get total count for pagination
+    const totalCount = await new Promise((resolve, reject) => {
+      pool.query(countQuery, countParams, (error, result) => {
+        if (error) {
+          req.flash("error", error.message);
+          return reject(error);
+        }
+        resolve(result[0].total);
+      });
+    });
+
     const customers = await new Promise((resolve, reject) => {
       pool.query(getQuery, queryParams, (error, result) => {
         if (error) {
           req.flash("error", error.message);
           return reject(error);
         }
-        console.log(`✓ Retrieved ${result.length} students for display`);
+        console.log(`✓ Retrieved ${result.length} students for page ${page}`);
         if (userRoles.includes("Center") && result.length > 0) {
           console.log('Sample student center_id:', result[0].center_id);
         }
         resolve(result);
       });
     });
+
+    // Calculate pagination data
+    const totalPages = Math.ceil(totalCount / limit);
+    const pagination = {
+      currentPage: page,
+      totalPages: totalPages,
+      totalRecords: totalCount,
+      limit: limit,
+      hasNext: page < totalPages,
+      hasPrev: page > 1
+    };
     
     // Fetch filter options
     const courses = await Helper.getActiveCourses();
@@ -168,7 +278,7 @@ const List = async (req, res) => {
         
         // First, let's see ALL active centers
         const [allCenters] = await pool.promise().query(
-          `SELECT id, name FROM centers WHERE status = 1 AND deleted_at IS NULL`
+          `SELECT id, name FROM centers WHERE deleted_at IS NULL`
         );
         console.log('All active centers:', allCenters);
         
@@ -238,7 +348,8 @@ const List = async (req, res) => {
       toDate: toDate || '',
       permissions: req.session.permissions || [],
       userRoles: userRoles,
-      userId: userId
+      userId: userId,
+      pagination: pagination
     });
   } catch (error) {
     console.error('Error in List function:', error);
@@ -286,8 +397,6 @@ const Create = async (req, res) => {
     } else {
       courses = await Helper.getActiveCourses();
     }
-   
-   
     res.render("admin/customer/create", {
       success: req.flash("success"),
       error: req.flash("error"),
@@ -588,18 +697,82 @@ const Store = async (req, res) => {
       mobile,
       category_id,
       class_id,
-      center_id,
       status,
+      course,
+      city
     } = req.body;
 
-    const created_by = req.session.adminUserId; // admin creating this user
+    let created_by = req.session.adminUserId; // admin creating this user
+    let center_id = req.body.center_id; // Will be overridden for center users
+    const userRoles = req.session.userRole || [];
+    const userId = req.user.id;
 
     name = name?.trim();
     email = email?.trim();
     mobile = mobile?.trim();
+    city = city?.trim();
 
-    // Always set registration_type = admin
-    const registration_type = "admin";
+    // Set registration_type = default (not admin)
+    const registration_type = "default";
+
+    // 🏢 Auto-assign center_id for center users (override any form value)
+    if (userRoles.includes("Center")) {
+      console.log('🏢 Center user creating student - User ID:', userId);
+      console.log('🏢 Form center_id (will be overridden):', center_id);
+      
+      // First check if user has direct center_id
+      const [userData] = await pool.promise().query(
+        `SELECT center_id, name FROM users WHERE id = ? LIMIT 1`,
+        [userId]
+      );
+      
+      if (userData.length > 0 && userData[0].center_id) {
+        center_id = userData[0].center_id;
+        created_by = center_id; // Set created_by to center_id for center users
+        console.log('✅ Using direct center_id from users table:', center_id);
+        console.log('✅ Center from centers table ID:', center_id);
+        console.log('✅ Setting created_by to center_id:', created_by);
+      } else if (userData.length > 0 && userData[0].name) {
+        // Fallback to name matching (including inactive centers for student creation)
+        const userName = userData[0].name;
+        console.log('⚠️ User has no center_id, trying name matching for:', userName);
+        
+        const [centerMatch] = await pool.promise().query(
+          `SELECT id, status FROM centers 
+           WHERE TRIM(name) COLLATE utf8mb4_unicode_ci = TRIM(?) COLLATE utf8mb4_unicode_ci 
+           AND deleted_at IS NULL
+           LIMIT 1`,
+          [userName]
+        );
+        
+        if (centerMatch.length > 0) {
+          center_id = centerMatch[0].id;
+          created_by = center_id; // Set created_by to center_id for center users
+          
+          // Warn if center is inactive
+          if (centerMatch[0].status != 1) {
+            console.log('⚠️ WARNING: Center is inactive (status=' + centerMatch[0].status + ')');
+            console.log('💡 SOLUTION: Run SQL: UPDATE centers SET status = 1 WHERE id = ' + center_id + ';');
+          }
+        } else {
+          console.log('❌ ERROR: Cannot find center for this center user');
+          console.log('💡 User name:', userName);
+          console.log('💡 SOLUTION: Run SQL: UPDATE users SET center_id = <correct_center_id> WHERE id = ' + userId + ';');
+          return res.status(400).json({
+            success: false,
+            errors: { center_id: ["Center not found for this user. Please contact admin."] },
+            message: "Center not found for this user"
+          });
+        }
+      } else {
+        console.log('❌ ERROR: User data not found');
+        return res.status(400).json({
+          success: false,
+          errors: { center_id: ["User information not found. Please contact admin."] },
+          message: "User information not found"
+        });
+      }
+    }
 
     const errors = {};
 
@@ -617,6 +790,7 @@ const Store = async (req, res) => {
     }
     if (!category_id) errors.category_id = ["Category is required"];
     if (!class_id) errors.class_id = ["Class is required"];
+    if (!city) errors.city = ["City is required"];
 
     // Always force admin -> status = 1
     status = 1;
@@ -660,8 +834,8 @@ const Store = async (req, res) => {
       // ✅ Insert if no errors
       const insertQuery = `
         INSERT INTO front_users 
-        (name, email, mobile, category_id, class_id, registration_type, center_id, status, created_by, created_at, updated_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
+        (name, email, mobile, category_id, class_id, registration_type, center_id, status, created_by, city, created_at, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
       `;
 
       pool.query(
@@ -672,12 +846,13 @@ const Store = async (req, res) => {
           mobile,
           category_id,
           class_id,
-          registration_type, // always "admin"
+          registration_type,
           center_id,
-          status, // always 1
-          created_by, // admin id
+          status,
+          created_by,
+          city
         ],
-        (err) => {
+        async (err, result) => {
           if (err) {
             console.error("Error executing query:", err);
             return res.status(500).json({
@@ -686,10 +861,64 @@ const Store = async (req, res) => {
             });
           }
 
+          const newUserId = result.insertId;
+
+          // 📚 Handle course assignment - insert into course_orders table
+          if (Array.isArray(course) && course.length > 0) {
+            const dayjs = require("dayjs");
+            const durationPlugin = require("dayjs/plugin/duration");
+            dayjs.extend(durationPlugin);
+
+            for (const courseId of course) {
+              try {
+                const [courseRows] = await pool.promise().query(
+                  "SELECT course_name, offer_price, course_type, duration FROM courses WHERE id = ?",
+                  [courseId]
+                );
+
+                if (courseRows.length === 0) continue;
+
+                const courseData = courseRows[0];
+                const transactionId = "admin" + Math.floor(100000 + Math.random() * 900000);
+                const orderId = "ORD-" + Math.floor(100000 + Math.random() * 900000) + "-admin";
+
+                const durationInMonths = parseInt(courseData.duration);
+                const safeDuration = isNaN(durationInMonths) ? 0 : durationInMonths;
+                const expiredDate = dayjs().add(safeDuration, 'month').format('YYYY-MM-DD');
+
+                await pool.promise().query(
+                  `INSERT INTO course_orders (
+                    user_id, course_id, transaction_id, course_name, course_expired_date,
+                    course_amount, total_amount, payment_type, order_status,
+                    source, assign_by, payment_status, order_id, order_type
+                  ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                  [
+                    newUserId,
+                    courseId,
+                    transactionId,
+                    courseData.course_name,
+                    expiredDate,
+                    courseData.offer_price,
+                    0,
+                    "online",
+                    "complete",
+                    "web",
+                    "admin",
+                    "complete",
+                    orderId,
+                    "course"
+                  ]
+                );
+              } catch (err) {
+                console.error(`Error inserting course order for course ID ${courseId}:`, err.message);
+              }
+            }
+          }
+
           return res.status(200).json({
             success: true,
             redirect_url: "/admin/student-list",
-            message: "Admin user saved successfully",
+            message: "Student saved successfully",
           });
         }
       );
@@ -925,7 +1154,6 @@ const Update = async (req, res) => {
     category_id,
     class_id,
     registration_type,
-    center_id,
     status,
     course,
     city
@@ -936,8 +1164,53 @@ const Update = async (req, res) => {
   email = email?.trim();
   mobile = mobile?.trim();
   registration_type = registration_type?.trim();
-  center_id = center_id?.trim();
+  
+  let center_id = req.body.center_id; // Will be overridden for center users
   const updated_by = req.user.id; // Logged-in admin ID
+  const userRoles = req.session.userRole || [];
+  const loggedInUserId = req.user.id;
+  
+  // 🏢 Auto-assign center_id for center users (same logic as Store)
+  if (userRoles.includes("Center")) {
+    console.log('🏢 Center user updating student - User ID:', loggedInUserId);
+    console.log('🏢 Form center_id (will be overridden):', center_id);
+    
+    // First check if user has direct center_id
+    const [userData] = await pool.promise().query(
+      `SELECT center_id, name FROM users WHERE id = ? LIMIT 1`,
+      [loggedInUserId]
+    );
+    
+    if (userData.length > 0 && userData[0].center_id) {
+      center_id = userData[0].center_id;
+      console.log('✅ Using direct center_id from users table:', center_id);
+    } else if (userData.length > 0 && userData[0].name) {
+      // Fallback to name matching
+      const userName = userData[0].name;
+      console.log('⚠️ User has no center_id, trying name matching for:', userName);
+      
+      const [centerMatch] = await pool.promise().query(
+        `SELECT id FROM centers 
+         WHERE TRIM(name) COLLATE utf8mb4_unicode_ci = TRIM(?) COLLATE utf8mb4_unicode_ci 
+         AND deleted_at IS NULL
+         LIMIT 1`,
+        [userName]
+      );
+      
+      if (centerMatch.length > 0) {
+        center_id = centerMatch[0].id;
+        console.log('✅ Using center_id from name match:', center_id);
+      } else {
+        console.log('❌ ERROR: Cannot find center for this center user');
+        return res.status(400).json({
+          success: false,
+          errors: { center_id: ["Center not found for this user. Please contact admin."] },
+          message: "Center not found for this user"
+        });
+      }
+    }
+  }
+  
   const errors = {};
 
   // Validations

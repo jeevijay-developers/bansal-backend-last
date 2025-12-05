@@ -275,6 +275,11 @@ const careerRequestList = async (req, res) => {
   try {
     const { from_date, to_date, position } = req.query;
 
+    // Pagination parameters
+    const page = parseInt(req.query.page) || 1;
+    const limit = 15;
+    const offset = (page - 1) * limit;
+
     // Get current user's role_id and name
     const userRoleId = parseInt(req.user?.role_id) || 0;
     const userRoles = req.roles || req.session.userRole || [];
@@ -285,50 +290,79 @@ const careerRequestList = async (req, res) => {
     // Check if user can see all data (Super Admin or HR Team)
     const canSeeAllData = isSuperAdmin || isHRTeam;
 
+    let countQuery = `SELECT COUNT(*) as total FROM career_requests WHERE 1=1`;
     let query = `SELECT * FROM career_requests WHERE 1=1`;
+    const countValues = [];
     const values = [];
 
     // Apply filters for non-Super Admin and non-HR users
     if (!canSeeAllData) {
       // Filter by preferred locations
       if (userName) {
+        countQuery += ` AND (preferred_location1 = ? OR preferred_location2 = ? OR preferred_location3 = ?)`;
         query += ` AND (preferred_location1 = ? OR preferred_location2 = ? OR preferred_location3 = ?)`;
+        countValues.push(userName, userName, userName);
         values.push(userName, userName, userName);
       }
       
       // ADDITIONALLY filter by non-academic position only
+      countQuery += ` AND position = 'non-academic'`;
       query += ` AND position = 'non-academic'`;
     }
 
     if (from_date) {
+      countQuery += ` AND DATE(created_at) >= ?`;
       query += ` AND DATE(created_at) >= ?`;
+      countValues.push(from_date);
       values.push(from_date);
     }
 
     if (to_date) {
+      countQuery += ` AND DATE(created_at) <= ?`;
       query += ` AND DATE(created_at) <= ?`;
+      countValues.push(to_date);
       values.push(to_date);
     }
 
     // Only apply position filter if user can see all data
     if (canSeeAllData && position) {
+      countQuery += ` AND position = ?`;
       query += ` AND position = ?`;
+      countValues.push(position);
       values.push(position);
     }
 
-    query += ` ORDER BY created_at DESC`;
+    // Get total count
+    const [countResult] = await pool.promise().query(countQuery, countValues);
+    const totalCount = countResult[0].total;
 
-    const [rows] = await pool.promise().execute(query, values);
+    query += ` ORDER BY created_at DESC`;
+    query += ` LIMIT ? OFFSET ?`;
+    values.push(limit, offset);
+
+    const [rows] = await pool.promise().query(query, values);
 
     const [programs] = await pool
       .promise()
       .query(`SELECT * FROM faculty_trainings WHERE apply_date > CURDATE() AND status = 1 ORDER BY id ASC`);
+
+    // Calculate pagination data
+    const totalPages = Math.ceil(totalCount / limit);
+    const pagination = {
+      currentPage: page,
+      totalPages: totalPages,
+      totalRecords: totalCount,
+      limit: limit,
+      hasNext: page < totalPages,
+      hasPrev: page > 1
+    };
 
     return res.render("admin/career/request-list", {
       title: "Career Requests List",
       request_data: rows,
       programs,
       canSeeAllData, // Pass this to view to control filter visibility
+      pagination: pagination,
       req,
     });
 
@@ -375,37 +409,68 @@ const bftpRequestList = async (req, res) => {
 
     const { from_date, to_date, division } = req.query;
 
+    // Pagination parameters
+    const page = parseInt(req.query.page) || 1;
+    const limit = 15;
+    const offset = (page - 1) * limit;
+
+    let countQuery = `SELECT COUNT(*) as total FROM bftp_careers WHERE 1=1`;
     let query = `SELECT * FROM bftp_careers WHERE 1=1`;
+    const countValues = [];
     const values = [];
 
     if (from_date) {
+      countQuery += ` AND DATE(created_at) >= ?`;
       query += ` AND DATE(created_at) >= ?`;
+      countValues.push(from_date);
       values.push(from_date);
     }
 
     if (to_date) {
+      countQuery += ` AND DATE(created_at) <= ?`;
       query += ` AND DATE(created_at) <= ?`;
+      countValues.push(to_date);
       values.push(to_date);
     }
 
     if (division) {
+      countQuery += ` AND division = ?`;
       query += ` AND division = ?`;
+      countValues.push(division);
       values.push(division);
     }
 
-    query += ` ORDER BY created_at DESC`;
+    // Get total count
+    const [countResult] = await pool.promise().query(countQuery, countValues);
+    const totalCount = countResult[0].total;
 
-    const [rows] = await pool.promise().execute(query, values);
+    query += ` ORDER BY created_at DESC`;
+    query += ` LIMIT ? OFFSET ?`;
+    values.push(limit, offset);
+
+    const [rows] = await pool.promise().query(query, values);
 
     // const [programs] = await pool
     //   .promise()
     //   .query(`SELECT * FROM faculty_trainings WHERE apply_date > CURDATE() AND status = 1 ORDER BY id ASC`);
+
+    // Calculate pagination data
+    const totalPages = Math.ceil(totalCount / limit);
+    const pagination = {
+      currentPage: page,
+      totalPages: totalPages,
+      totalRecords: totalCount,
+      limit: limit,
+      hasNext: page < totalPages,
+      hasPrev: page > 1
+    };
 
     return res.render("admin/career/bftp-request-list", {
       title: "BFTP Requests List",
       request_data: rows,
      // programs,
       permissions: req.permissions || res.locals.permissions || [],
+      pagination: pagination,
       req,
     });
 
@@ -448,7 +513,7 @@ const bftpRequestListExport = async (req, res) => {
 
     query += ` ORDER BY created_at DESC`;
 
-    const [rows] = await pool.promise().execute(query, values);
+    const [rows] = await pool.promise().query(query, values);
 
     // Create CSV content with all detailed fields
     const headers = [

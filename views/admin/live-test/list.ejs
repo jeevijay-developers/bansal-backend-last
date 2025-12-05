@@ -4,7 +4,28 @@
 
 
   <style>
+    .table tbody tr:nth-of-type(odd) {
+      background-color: #f8f9fa;
+    }
 
+    .table tbody tr:nth-of-type(even) {
+      background-color: #ffffff;
+    }
+
+    .table-hover tbody tr:hover {
+      background-color: #e9ecef !important;
+    }
+
+    .badge {
+      font-size: 11px;
+      padding: 5px 10px;
+      font-weight: 600;
+    }
+
+    .btn-xs {
+      padding: 5px 8px;
+      font-size: 12px;
+    }
 
 .overlay {
   background: darken(#ddeee7, 30%);
@@ -153,7 +174,7 @@
                     <% customers.forEach((course, index)=> { %>
                       <tr>
                         <td>
-                          <%= index + 1 %>
+                          <strong>#<%= pagination ? (pagination.currentPage - 1) * pagination.limit + index + 1 : index + 1 %></strong>
                         </td>
 
                         <td>
@@ -167,32 +188,24 @@
                         <!-- <td><%= formatDate(course.created_at) %></td> -->
                         <td>
                           <% if (course.status==1) { %>
-                            <label class="badge badge-success">Active</label>
+                            <span class="badge badge-success">Active</span>
                             <% } else { %>
-                              <label class="badge badge-danger">Inactive</label>
+                              <span class="badge badge-danger">Inactive</span>
                               <% } %>
                         </td>
 
 
                         <td>
                           <a href="/admin/live-test-show/<%= course.id %>"
-                            class="btn btn-primary shadow btn-xs sharp me-1"><i class="fas fa-eye"></i></a>
+                            class="btn btn-info shadow btn-xs sharp me-1"><i class="fas fa-eye"></i></a>
                           <a href="/admin/live-test-edit/<%= course.id %>"
                             class="btn btn-primary shadow btn-xs sharp me-1"><i class="fas fa-pencil-alt"></i></a>
                           <a href="/admin/live-test-delete/<%= course.id %>"
-                            class="btn btn-danger shadow btn-xs sharp"><i class="fa fa-trash"></i></a>
-                    
-
-                            <a
-                            class="btn btn-danger btn-sm shadow btn-xs popup upload-question-btn" title="Upload Document" data-exam_id = <%= course.id %>>Upload Question</a>
-                 
-
-
-
+                            class="btn btn-danger shadow btn-xs sharp me-1"><i class="fa fa-trash"></i></a>
+                          <a class="btn btn-danger btn-sm shadow btn-xs popup upload-question-btn" 
+                             title="Upload Document" data-exam_id="<%= course.id %>">Upload Question</a>
                         </td>
                       </tr>
-                      
-
                       <% }); %>
 
                         <% function formatDate(dateString) { const date=new Date(dateString); const options={
@@ -202,6 +215,58 @@
                   </tbody>
                 </table>
               </div>
+
+              <!-- Pagination Controls -->
+              <% if (pagination && pagination.totalPages > 1) { %>
+                <div class="d-flex justify-content-between align-items-center mt-3">
+                  <div>
+                    Showing <%= (pagination.currentPage - 1) * pagination.limit + 1 %> 
+                    to <%= Math.min(pagination.currentPage * pagination.limit, pagination.totalRecords) %> 
+                    of <%= pagination.totalRecords %> entries
+                  </div>
+                  
+                  <nav>
+                    <ul class="pagination mb-0">
+                      <!-- First Page -->
+                      <li class="page-item <%= !pagination.hasPrev ? 'disabled' : '' %>">
+                        <a class="page-link" href="#" data-page="1">First</a>
+                      </li>
+                      
+                      <!-- Previous Page -->
+                      <li class="page-item <%= !pagination.hasPrev ? 'disabled' : '' %>">
+                        <a class="page-link" href="#" data-page="<%= pagination.currentPage - 1 %>">Prev</a>
+                      </li>
+                      
+                      <!-- Page Numbers -->
+                      <% 
+                        const maxPages = 5;
+                        let startPage = Math.max(1, pagination.currentPage - Math.floor(maxPages / 2));
+                        let endPage = Math.min(pagination.totalPages, startPage + maxPages - 1);
+                        
+                        if (endPage - startPage < maxPages - 1) {
+                          startPage = Math.max(1, endPage - maxPages + 1);
+                        }
+                        
+                        for (let i = startPage; i <= endPage; i++) { 
+                      %>
+                        <li class="page-item <%= i === pagination.currentPage ? 'active' : '' %>">
+                          <a class="page-link" href="#" data-page="<%= i %>"><%= i %></a>
+                        </li>
+                      <% } %>
+                      
+                      <!-- Next Page -->
+                      <li class="page-item <%= !pagination.hasNext ? 'disabled' : '' %>">
+                        <a class="page-link" href="#" data-page="<%= pagination.currentPage + 1 %>">Next</a>
+                      </li>
+                      
+                      <!-- Last Page -->
+                      <li class="page-item <%= !pagination.hasNext ? 'disabled' : '' %>">
+                        <a class="page-link" href="#" data-page="<%= pagination.totalPages %>">Last</a>
+                      </li>
+                    </ul>
+                  </nav>
+                </div>
+              <% } %>
             </div>
           </div>
         </div>
@@ -236,21 +301,15 @@ $(function() {
     $("body").append(appendthis);
     $(".overlay").fadeTo(500, 0.7);
     $(".popup_box").fadeTo(100, 1).removeClass("boom-out").addClass("boom-in");
-    //   var box_id = $(this).attr('data-popup-id');
-    //   $('#'+box_id).fadeIn($(this).data());
   });
-
-  //   close the popup box
 
   $(document).on("click", ".close, .overlay", function() {
     $(".popup_box").addClass("boom-out").removeClass("boom-in").fadeTo(100, 0);
-
     $(".overlay").fadeOut(500, function() {
       $(this).remove();
     });
   });
 
-  //   keep popup in center
   $(window).resize(function() {
     $(".popup_box").css({
       top: ($(window).height() - $(".popup_box").outerHeight(true)) / 2 + 5,
@@ -267,20 +326,34 @@ $(function() {
   $(window).resize();
 });
 
-
-
-  </script>
-
-  <script>
-  $(document).ready(function () {
-    $('.upload-question-btn').click(function () {
-      const examId = $(this).data('exam_id');
-      $('#test_id').val(examId);
-      $('#uploadPopup').show();
-    });
-
-    $('#uploadPopup .close').click(function () {
-      $('#uploadPopup').hide();
-    });
+// Upload question button handler
+$(document).ready(function () {
+  $('.upload-question-btn').click(function () {
+    const examId = $(this).data('exam_id');
+    $('#test_id').val(examId);
+    $('#uploadPopup').show();
   });
+
+  $('#uploadPopup .close').click(function () {
+    $('#uploadPopup').hide();
+  });
+});
+
+// Handle pagination clicks
+document.querySelectorAll('.pagination .page-link').forEach(link => {
+  link.addEventListener('click', function(e) {
+    e.preventDefault();
+    
+    if (this.parentElement.classList.contains('disabled') || 
+        this.parentElement.classList.contains('active')) {
+      return;
+    }
+    
+    const page = this.getAttribute('data-page');
+    const params = new URLSearchParams(window.location.search);
+    params.set('page', page);
+    
+    window.location.href = "/admin/live-test-list?" + params.toString();
+  });
+});
 </script>

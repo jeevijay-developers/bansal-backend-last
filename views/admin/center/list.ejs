@@ -1,5 +1,108 @@
 <%- include('../layouts/header') %>
 
+<style>
+  .form-label {
+    font-weight: 600;
+    margin-bottom: 5px;
+  }
+
+  .table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .table {
+    min-width: 900px;
+    white-space: nowrap;
+  }
+
+  .table th,
+  .table td {
+    padding: 12px 8px;
+    vertical-align: middle;
+  }
+
+  .table tbody tr:nth-of-type(odd) {
+    background-color: #f8f9fa;
+  }
+
+  .table tbody tr:nth-of-type(even) {
+    background-color: #ffffff;
+  }
+
+  .table-hover tbody tr:hover {
+    background-color: #e9ecef !important;
+  }
+
+  .badge {
+    font-size: 11px;
+    padding: 5px 10px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  .btn-xs {
+    padding: 4px 8px;
+    font-size: 12px;
+  }
+
+  .btn-xs i {
+    font-size: 12px;
+  }
+
+  .center-image {
+    border-radius: 4px;
+    border: 1px solid #dee2e6;
+    object-fit: cover;
+  }
+
+  .action-buttons {
+    display: flex;
+    gap: 5px;
+    flex-wrap: nowrap;
+  }
+
+  .pagination .page-link {
+    padding: 0.5rem 0.75rem;
+    margin: 0 2px;
+    border-radius: 4px;
+  }
+
+  .pagination .page-item.active .page-link {
+    background-color: #007bff;
+    border-color: #007bff;
+  }
+
+  .card {
+    border: none;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+    border-radius: 10px;
+  }
+
+  .card-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 10px 10px 0 0 !important;
+    padding: 1.25rem;
+  }
+
+  .card-header h4 {
+    color: white !important;
+    margin: 0;
+  }
+
+  .card-header .btn {
+    border: 2px solid white;
+    font-weight: 600;
+    transition: all 0.3s ease;
+  }
+
+  .card-header .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+  }
+</style>
+
 <section class="content-body">
   <div class="container-fluid">
     <div class="row">
@@ -8,90 +111,92 @@
             <div class="card-header d-flex align-items-center justify-content-between">
                 <h4 class="card-title mb-0"><%= page_name %></h4>
           
-                <div class="row">
-                  <div class="col-12 text-end">
-                    <% if (req.query.status==='trashed' ) { %>
-                    <a class="btn btn-primary" href="<%= list_url %>">
-                      <i class="fas fa-list"></i>
+                <div class="d-flex gap-2">
+                  <% if (req.query.status==='trashed' ) { %>
+                    <a class="btn btn-primary btn-sm" href="<%= list_url %>" title="View Active List">
+                      <i class="fas fa-list"></i> List
                     </a>
-                    <% } else { %>
-                    <a class="btn btn-danger btn-sm" href="<%= trashed_list_url %>">
-                      <i class="fas fa-trash"></i> 
+                  <% } else { %>
+                    <a class="btn btn-danger btn-sm" href="<%= trashed_list_url %>" title="View Trashed">
+                      <i class="fas fa-trash"></i>
                     </a>
-                    <% } %>
+                  <% } %>
           
-                    <a class="btn btn-info btn-sm" href="<%= create_url %>">
-                      <i class="fas fa-plus"></i> 
-                    </a>
-                    <button type="button" id="backButton" class="btn btn-primary btn-sm">
-                      <i class="fa fa-arrow-left"></i> 
-                    </button>
-                  </div>
+                  <a class="btn btn-info btn-sm" href="<%= create_url %>" title="Create New">
+                    <i class="fas fa-plus"></i> Add New
+                  </a>
+                  <button type="button" id="backButton" class="btn btn-primary btn-sm" title="Go Back">
+                    <i class="fa fa-arrow-left"></i>
+                  </button>
                 </div>
             </div>
             <div class="card-body">
+              <% if (success && success.length> 0) { %>
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                  <%= success %>
+                  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+              <% } %>
 
-      <div class="table-responsive">
-         <!-- <% if (req.query.status !== 'trashed') { %>
-         <button id="bulkDeleteBtn" class="btn btn-danger btn-sm mb-2" disabled>
-  <i class="fa fa-trash"></i> Delete Selected
-</button>
-<% } %>
+              <% if (error && error.length> 0) { %>
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                  <%= error %>
+                  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+              <% } %>
 
-<% if (req.query.status === 'trashed') { %>
-  <button id="bulkRestoreBtn" class="btn btn-success btn-sm mb-2" disabled>
-    <i class="fa fa-undo"></i> Restore Selected
-  </button>
-<% } %> -->
+              <div class="d-flex align-items-center mb-3 gap-2">
+                <% if (req.query.status !== 'trashed') { %>
+                  <button id="bulkDeleteBtn" class="btn btn-danger btn-sm" disabled>
+                    <i class="fa fa-trash"></i> Delete Selected
+                  </button>
+                <% } %>
 
+                <% if (req.query.status === 'trashed') { %>
+                  <button id="bulkRestoreBtn" class="btn btn-success btn-sm" disabled>
+                    <i class="fa fa-undo"></i> Restore Selected
+                  </button>
+                <% } %>
 
-<div class="d-flex align-items-center mb-2 justify-content-between">
-  <% if (req.query.status !== 'trashed') { %>
-    <button id="bulkDeleteBtn" class="btn btn-danger btn-sm me-2" disabled>
-      <i class="fa fa-trash"></i> Delete Selected
-    </button>
-  <% } %>
+                <% if (permissions.includes('Center Export')) { %>
+                  <a href="#" id="exportCenters" class="btn btn-success btn-sm">
+                    <i class="fas fa-file-export"></i> Export Centers
+                  </a>
+                <% } %>
+              </div>
 
-  <% if (req.query.status === 'trashed') { %>
-    <button id="bulkRestoreBtn" class="btn btn-success btn-sm me-2" disabled>
-      <i class="fa fa-undo"></i> Restore Selected
-    </button>
-  <% } %>
-
-
-
-  <% if (permissions.includes('Center Export')) { %>
-
-    <a href="#" id="exportCenters" class="btn btn-success btn-sm">
-    <i class="fas fa-file-export"></i> Export Centers
-  </a>
- <% } %>
-</div>
-<hr>
-
-              <table id="example3" class="display table-responsive-lg">
+              <hr>
+              
+              <div class="table-responsive">
+                <table class="table table-striped table-hover">
                                 <thead>
                                     <tr>
-                                       <th><input type="checkbox" id="selectAll" /></th> <!-- Bulk select all -->
-                                        <th>Sr.No</th>
-
+                                       <th style="width: 50px;"><input type="checkbox" id="selectAll" /></th>
+                                        <th style="width: 80px;">Sr.No</th>
                                         <th>Name</th>
-                                             <th>City</th>
+                                        <th>City</th>
                                         <th>Email</th>
-                                        <th>Logo</th>
-                                        <!-- <th>Registration Date</th> -->
-                                        <th>Status</th>
-                                        <th>Actions</th>
+                                        <th style="width: 120px;">Logo</th>
+                                        <th style="width: 100px;">Status</th>
+                                        <th style="width: 180px;">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
+                                  <% if (customers.length === 0) { %>
+                                    <tr>
+                                      <td colspan="8" class="text-center py-4">
+                                        <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                                        <p class="text-muted mb-0">No centers found</p>
+                                      </td>
+                                    </tr>
+                                  <% } else { %>
                                     <% customers.forEach((post, index)=> { %>
                                         <tr>
-                                          <td>
+                                          <td class="text-center">
                                            <input type="checkbox" class="bulk-checkbox" value="<%= post.id %>" />
                                            </td>
-                                            <td>
-                                                <%= index + 1 %>
+                                            <td class="text-center">
+                                                <strong>#<%= (pagination.currentPage - 1) * pagination.limit + index + 1 %></strong>
                                             </td>
 
                                             <td>
@@ -104,80 +209,78 @@
                                             <td>
                                                 <%= post.email %>
                                             </td>
-  <td>
+  <td class="text-center">
                         <% if (post.logo) { %>
                           <a href="<%= publicUrl + post.logo %>" target="_blank">
-                            <img src="<%= publicUrl + post.logo %>" width="100" />
+                            <img src="<%= publicUrl + post.logo %>" class="center-image" width="80" height="60" />
                           </a>
                         <% } else { %>
-                          No Image
+                          <span class="badge bg-secondary">No Image</span>
                         <% } %>
                       </td>
                                             
                                             
-                                            </td>
                                             
-                                            <td>
+                                            
+                                            <td class="text-center">
                                                 <% if (post.status==1) { %>
-                                                    <label class="badge badge-success">Active</label>
+                                                    <span class="badge bg-success">Active</span>
                                                     <% } else { %>
-                                                        <label class="badge badge-danger">Inactive</label>
+                                                        <span class="badge bg-danger">Inactive</span>
                                                         <% } %>
                                             </td>
                                          
 
                                             <td>
+                          <div class="action-buttons">
                       <a
                         href="/admin/center-show/<%= post.id %>"
-                        class="btn btn-primary shadow btn-xs sharp me-1"
+                        class="btn btn-info btn-xs shadow sharp"
+                        title="View"
                         ><i class="fas fa-eye"></i
                       ></a>
                        <% if (status !== 'trashed') { %>
                       <a
                         href="<%= actions_url %>-edit/<%= post.id %>"
-                        class="btn btn-primary shadow btn-xs sharp me-1"
+                        class="btn btn-primary btn-xs shadow sharp"
+                        title="Edit"
                       >
                         <i class="fas fa-pencil-alt"></i>
                       </a>
 
                       <a
                         href="<%= actions_url %>-delete/<%= post.id %>"
-                        class="btn btn-danger shadow btn-xs sharp"
-                        onclick="return confirm('Are you sure you want to delete this post?');"
+                        class="btn btn-danger btn-xs shadow sharp"
+                        title="Delete"
+                        onclick="return confirm('Are you sure you want to delete this center?');"
                       >
                         <i class="fa fa-trash"></i>
                       </a>
                       <% } %> <% if (status === 'trashed') { %>
                       <a
                         href="<%= actions_url %>-restore/<%= post.id %>"
-                        class="btn btn-danger shadow btn-xs sharp"
-                        onclick="return confirm('Are you sure you want to restore this post?');"
+                        class="btn btn-success btn-xs shadow sharp"
+                        title="Restore"
+                        onclick="return confirm('Are you sure you want to restore this center?');"
                       >
                         <i class="fa fa-undo"></i>
                       </a>
 
                       <a
                         href="<%= actions_url %>-permanent-delete/<%= post.id %>"
-                        class="btn btn-danger shadow btn-xs sharp"
-                        onclick="return confirm('Are you sure you want to permanently delete this post?');"
+                        class="btn btn-danger btn-xs shadow sharp"
+                        title="Permanent Delete"
+                        onclick="return confirm('Are you sure you want to permanently delete this center?');"
                       >
                         <i class="fa fa-trash"></i>
                       </a>
                       <% } %>
-                      <!-- <a
-                        href="/admin/center-edit/<%= post.id %>"
-                        class="btn btn-primary shadow btn-xs sharp me-1"
-                        ><i class="fas fa-pencil-alt"></i
-                      ></a>
-                      <a
-                        href="/admin/center-delete/<%= post.id %>"
-                        class="btn btn-danger shadow btn-xs sharp"
-                        ><i class="fa fa-trash"></i
-                      ></a> -->
+                       </div>
                     </td>
 
                                         </tr>
                                         <% }); %>
+                                      <% } %>
 
                                             <% function formatDate(dateString) { const date=new Date(dateString); const
                                                 options={ year: 'numeric' , month: 'short' , day: 'numeric' ,
@@ -187,106 +290,167 @@
                                 </tbody>
                             </table>
                         </div>
+
+              <!-- Pagination Controls -->
+              <% if (pagination.totalPages > 1) { %>
+                <div class="d-flex justify-content-between align-items-center mt-3">
+                  <div>
+                    Showing <%= (pagination.currentPage - 1) * pagination.limit + 1 %> to 
+                    <%= Math.min(pagination.currentPage * pagination.limit, pagination.totalRecords) %> 
+                    of <%= pagination.totalRecords %> entries
+                  </div>
+                  <nav>
+                    <ul class="pagination mb-0">
+                      <li class="page-item <%= pagination.currentPage === 1 ? 'disabled' : '' %>">
+                        <a class="page-link" href="#" data-page="1">First</a>
+                      </li>
+                      <li class="page-item <%= !pagination.hasPrev ? 'disabled' : '' %>">
+                        <a class="page-link" href="#" data-page="<%= pagination.currentPage - 1 %>">&laquo;</a>
+                      </li>
+                      <% 
+                        let startPage = Math.max(1, pagination.currentPage - 2);
+                        let endPage = Math.min(pagination.totalPages, pagination.currentPage + 2);
+                        if (pagination.currentPage <= 3) {
+                          endPage = Math.min(5, pagination.totalPages);
+                        }
+                        if (pagination.currentPage > pagination.totalPages - 3) {
+                          startPage = Math.max(1, pagination.totalPages - 4);
+                        }
+                      %>
+                      <% for (let i = startPage; i <= endPage; i++) { %>
+                        <li class="page-item <%= pagination.currentPage === i ? 'active' : '' %>">
+                          <a class="page-link" href="#" data-page="<%= i %>"><%= i %></a>
+                        </li>
+                      <% } %>
+                      <li class="page-item <%= !pagination.hasNext ? 'disabled' : '' %>">
+                        <a class="page-link" href="#" data-page="<%= pagination.currentPage + 1 %>">&raquo;</a>
+                      </li>
+                      <li class="page-item <%= pagination.currentPage === pagination.totalPages ? 'disabled' : '' %>">
+                        <a class="page-link" href="#" data-page="<%= pagination.totalPages %>">Last</a>
+                      </li>
+                    </ul>
+                  </nav>
+                </div>
+              <% } %>
                     </div>
         </div></div>
     </div></div>
 </section>
     <%- include('../layouts/footer') %>
 
-        <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
-        <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap4.min.js"></script>
-
         <script>
-            $(document).ready(function () {
-                $('#order-listing').DataTable();
+          // Back button handler
+          document.getElementById("backButton").addEventListener("click", () => {
+            window.history.back();
+          });
+
+          // Pagination handler
+          document.querySelectorAll('.pagination .page-link').forEach(link => {
+            link.addEventListener('click', function(e) {
+              e.preventDefault();
+              
+              if (this.parentElement.classList.contains('disabled') || 
+                  this.parentElement.classList.contains('active')) {
+                return;
+              }
+              
+              const page = this.getAttribute('data-page');
+              const params = new URLSearchParams(window.location.search);
+              params.set('page', page);
+              
+              window.location.href = window.location.pathname + '?' + params.toString();
             });
-
-
+          });
         </script>
 
          <script>
   const bulkDeleteBtn = document.getElementById("bulkDeleteBtn");
-  const checkboxes = document.querySelectorAll(".bulk-checkbox");
+  const bulkRestoreBtn = document.getElementById("bulkRestoreBtn");
   const selectAll = document.getElementById("selectAll");
+  const checkboxes = document.querySelectorAll(".bulk-checkbox");
 
   function updateBulkDeleteButton() {
+    if (!bulkDeleteBtn) return;
     const anyChecked = Array.from(checkboxes).some(cb => cb.checked);
     bulkDeleteBtn.disabled = !anyChecked;
   }
 
-  // On individual checkbox change
-  checkboxes.forEach(cb => cb.addEventListener("change", updateBulkDeleteButton));
-
-  // On select/deselect all
-  selectAll.addEventListener("change", function() {
-    checkboxes.forEach(cb => cb.checked = this.checked);
-    updateBulkDeleteButton();
-  });
-
-  // Bulk Delete click
-  bulkDeleteBtn.addEventListener("click", async function() {
-    const selectedIds = Array.from(checkboxes)
-                             .filter(cb => cb.checked)
-                             .map(cb => cb.value);
-
-    if (selectedIds.length === 0) return; // safety
-
-    if (!confirm("Are you sure you want to delete selected data?")) return;
-
-    try {
-      const response = await fetch("/admin/center/bulk-delete", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ids: selectedIds })
-      });
-
-      const result = await response.json();
-      alert(result.message);
-
-      if (result.success) location.reload();
-    } catch (err) {
-      alert("Error deleting data: " + err.message);
-    }
-  });
-</script>
-
-
-<script>
-  const bulkRestoreBtn = document.getElementById("bulkRestoreBtn");
-  
   function updateBulkRestoreButton() {
+    if (!bulkRestoreBtn) return;
     const anyChecked = Array.from(checkboxes).some(cb => cb.checked);
     bulkRestoreBtn.disabled = !anyChecked;
   }
 
-  // Checkbox change event
-  checkboxes.forEach(cb => cb.addEventListener("change", updateBulkRestoreButton));
+  // On individual checkbox change
+  checkboxes.forEach(cb => cb.addEventListener('change', function() {
+    updateBulkDeleteButton();
+    updateBulkRestoreButton();
+  }));
+
+  // On select/deselect all
+  if (selectAll) {
+    selectAll.addEventListener('change', function() {
+      checkboxes.forEach(cb => cb.checked = this.checked);
+      updateBulkDeleteButton();
+      updateBulkRestoreButton();
+    });
+  }
+
+  // Bulk Delete click
+  if (bulkDeleteBtn) {
+    bulkDeleteBtn.addEventListener("click", async function() {
+      const selectedIds = Array.from(checkboxes)
+                               .filter(cb => cb.checked)
+                               .map(cb => cb.value);
+
+      if (selectedIds.length === 0) return;
+
+      if (!confirm("Are you sure you want to delete selected centers?")) return;
+
+      try {
+        const response = await fetch("/admin/center/bulk-delete", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ids: selectedIds })
+        });
+
+        const result = await response.json();
+        alert(result.message);
+
+        if (result.success) location.reload();
+      } catch (err) {
+        alert("Error deleting centers: " + err.message);
+      }
+    });
+  }
 
   // Bulk Restore click
-  bulkRestoreBtn.addEventListener("click", async function() {
-    const selectedIds = Array.from(checkboxes)
-                             .filter(cb => cb.checked)
-                             .map(cb => cb.value);
+  if (bulkRestoreBtn) {
+    bulkRestoreBtn.addEventListener("click", async function() {
+      const selectedIds = Array.from(checkboxes)
+                               .filter(cb => cb.checked)
+                               .map(cb => cb.value);
 
-    if (selectedIds.length === 0) return; // safety
+      if (selectedIds.length === 0) return;
 
-    if (!confirm("Are you sure you want to restore selected data?")) return;
+      if (!confirm("Are you sure you want to restore selected centers?")) return;
 
-    try {
-      const response = await fetch("/admin/center/bulk-restore", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ids: selectedIds })
-      });
+      try {
+        const response = await fetch("/admin/center/bulk-restore", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ids: selectedIds })
+        });
 
-      const result = await response.json();
-      alert(result.message);
+        const result = await response.json();
+        alert(result.message);
 
-      if (result.success) location.reload();
-    } catch (err) {
-      alert("Error restoring data: " + err.message);
-    }
-  });
+        if (result.success) location.reload();
+      } catch (err) {
+        alert("Error restoring centers: " + err.message);
+      }
+    });
+  }
 </script>
 
 <script>

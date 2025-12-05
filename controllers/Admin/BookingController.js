@@ -422,7 +422,7 @@ const whereClause = "WHERE order_type = 'test'";
 
     query += ` ORDER BY created_at DESC`;
 
-    const [rows] = await pool.promise().execute(query, values);
+    const [rows] = await pool.promise().query(query, values);
     const [programs] = await pool
   .promise()
   .query("SELECT * FROM faculty_trainings WHERE apply_date > CURDATE() AND status = 1 ORDER BY id ASC");
@@ -443,46 +443,79 @@ static async boostProgramRequestList(req, res) {
   try {
     const { from_date, to_date, payment_status } = req.query;
 
+    // Pagination parameters
+    const page = parseInt(req.query.page) || 1;
+    const limit = 15;
+    const offset = (page - 1) * limit;
+
     // Get current user's role and name
     const userRoles = req.roles || req.session.userRole || [];
     const isSuperAdmin = userRoles.includes('Super Admin');
     const userName = req.user?.name || req.session?.userName || '';
 
+    let countQuery = `SELECT COUNT(*) as total FROM boost_training_requests WHERE 1=1`;
     let query = `SELECT * FROM boost_training_requests WHERE 1=1`;
+    const countValues = [];
     const values = [];
 
     // Filter by center if user is not Super Admin
     if (!isSuperAdmin && userName) {
+      countQuery += ` AND centre = ?`;
       query += ` AND centre = ?`;
+      countValues.push(userName);
       values.push(userName);
     }
 
     if (from_date) {
+      countQuery += ` AND DATE(created_at) >= ?`;
       query += ` AND DATE(created_at) >= ?`;
+      countValues.push(from_date);
       values.push(from_date);
     }
 
     if (to_date) {
+      countQuery += ` AND DATE(created_at) <= ?`;
       query += ` AND DATE(created_at) <= ?`;
+      countValues.push(to_date);
       values.push(to_date);
     }
 
     if (payment_status) {
+      countQuery += ` AND payment_status = ?`;
       query += ` AND payment_status = ?`;
-      values.push(payment_status); // expects 'pending' or 'complete'
+      countValues.push(payment_status); // expects 'pending' or 'complete'
+      values.push(payment_status);
     }
 
-    query += ` ORDER BY id DESC`;
+    // Get total count
+    const [countResult] = await pool.promise().query(countQuery, countValues);
+    const totalCount = countResult[0].total;
 
-    const [rows] = await pool.promise().execute(query, values);
+    query += ` ORDER BY id DESC`;
+    query += ` LIMIT ? OFFSET ?`;
+    values.push(limit, offset);
+
+    const [rows] = await pool.promise().query(query, values);
 
     const programs = [];
+
+    // Calculate pagination data
+    const totalPages = Math.ceil(totalCount / limit);
+    const pagination = {
+      currentPage: page,
+      totalPages: totalPages,
+      totalRecords: totalCount,
+      limit: limit,
+      hasNext: page < totalPages,
+      hasPrev: page > 1
+    };
 
     return res.render("admin/booking/boost-program-request-list", {
       title: "Boost Program Request",
       request_data: rows,
       programs,
       permissions: req.permissions || res.locals.permissions || [],
+      pagination: pagination,
       req,
     });
 
@@ -550,7 +583,7 @@ static async boostProgramRequestListExport(req, res) {
 
     query += ` ORDER BY id DESC`;
 
-    const [rows] = await pool.promise().execute(query, values);
+    const [rows] = await pool.promise().query(query, values);
 
     // Create CSV content with all detailed fields
     const headers = [

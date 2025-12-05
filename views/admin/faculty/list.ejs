@@ -1,5 +1,195 @@
 <%- include('../layouts/header') %>
 
+<style>
+  /* Custom DataTable Styling */
+  #facultyTable {
+    font-size: 14px;
+  }
+  
+  #facultyTable thead th {
+    background-color: #f8f9fa;
+    color: #495057;
+    font-weight: 600;
+    text-align: center;
+    vertical-align: middle;
+    border-bottom: 2px solid #dee2e6;
+    white-space: nowrap;
+  }
+  
+  #facultyTable tbody td {
+    vertical-align: middle;
+    padding: 12px 8px;
+  }
+  
+  #facultyTable tbody tr:hover {
+    background-color: #f8f9fa;
+  }
+  
+  /* Improve button spacing */
+  .btn-xs {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+  }
+  
+  /* DataTable wrapper styling */
+  .dataTables_wrapper .dataTables_length,
+  .dataTables_wrapper .dataTables_filter {
+    margin-bottom: 1rem;
+  }
+  
+  .dataTables_wrapper .dataTables_paginate {
+    margin-top: 1rem;
+  }
+  
+  /* Pagination styling */
+  .dataTables_wrapper .dataTables_paginate .paginate_button {
+    padding: 0.375rem 0.75rem;
+    margin: 0 2px;
+    border-radius: 0.25rem;
+    background: white;
+    border: 1px solid #dee2e6;
+    color: #495057 !important;
+  }
+  
+  .dataTables_wrapper .dataTables_paginate .paginate_button.current {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    color: white !important;
+    border-color: #667eea !important;
+    box-shadow: 0 2px 4px rgba(102, 126, 234, 0.3);
+  }
+  
+  .dataTables_wrapper .dataTables_paginate .paginate_button:hover:not(.current):not(.disabled) {
+    background: #667eea !important;
+    color: white !important;
+    border-color: #667eea !important;
+    box-shadow: 0 2px 4px rgba(102, 126, 234, 0.2);
+  }
+  
+  .dataTables_wrapper .dataTables_paginate .paginate_button.disabled {
+    color: #adb5bd !important;
+    background: #f8f9fa !important;
+    border-color: #dee2e6 !important;
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+  
+  .dataTables_wrapper .dataTables_paginate .paginate_button.previous,
+  .dataTables_wrapper .dataTables_paginate .paginate_button.next {
+    font-weight: 600;
+  }
+  
+  /* Info and length menu styling */
+  .dataTables_wrapper .dataTables_info {
+    padding-top: 1rem;
+    font-weight: 500;
+  }
+  
+  .dataTables_wrapper .dataTables_length select {
+    padding: 0.375rem 1.75rem 0.375rem 0.75rem;
+    border: 1px solid #ced4da;
+    border-radius: 0.25rem;
+  }
+  
+  /* Search box styling */
+  .dataTables_wrapper .dataTables_filter input {
+    padding: 0.375rem 0.75rem;
+    border: 1px solid #ced4da;
+    border-radius: 0.25rem;
+    margin-left: 0.5rem;
+  }
+  
+  /* Badge improvements */
+  .badge {
+    padding: 0.35em 0.65em;
+    font-size: 0.875rem;
+    font-weight: 500;
+  }
+  
+  .badge-success {
+    background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%);
+    color: #155724;
+  }
+  
+  .badge-danger {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    color: #fff;
+  }
+  
+  /* Image hover effect */
+  #facultyTable td img {
+    transition: transform 0.2s;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+  
+  #facultyTable td img:hover {
+    transform: scale(1.1);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  }
+  
+  /* Card styling */
+  .card {
+    border: none;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+    border-radius: 10px;
+  }
+  
+  .card-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 10px 10px 0 0 !important;
+    padding: 1.25rem;
+  }
+  
+  .card-header h4 {
+    color: white !important;
+    margin: 0;
+  }
+  
+  /* Action buttons hover effects */
+  .btn-xs.sharp {
+    transition: all 0.3s ease;
+  }
+  
+  .btn-xs.sharp:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  }
+  
+  /* Top action buttons */
+  .card-header .btn {
+    border: 2px solid white;
+    font-weight: 600;
+    transition: all 0.3s ease;
+  }
+  
+  .card-header .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+  }
+  
+  /* Bulk action buttons */
+  #bulkDeleteBtn,
+  #bulkRestoreBtn,
+  #exportBtn {
+    font-weight: 600;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+  
+  #bulkDeleteBtn:hover:not(:disabled),
+  #bulkRestoreBtn:hover:not(:disabled),
+  #exportBtn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  }
+  
+  #bulkDeleteBtn:disabled,
+  #bulkRestoreBtn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+</style>
+
   <div class="content-body">
     <div class="container-fluid">
       <div class="row">
@@ -45,19 +235,20 @@
   </button>
 <% } %> -->
 
-<div class="d-flex align-items-center mb-2 justify-content-between">
+<div class="d-flex align-items-center mb-3 justify-content-between">
+  <div>
   <% if (req.query.status !== 'trashed') { %>
-         <button id="bulkDeleteBtn" class="btn btn-danger btn-sm mb-2" disabled>
+         <button id="bulkDeleteBtn" class="btn btn-danger btn-sm me-2" disabled>
   <i class="fa fa-trash"></i> Delete Selected
 </button>
 <% } %>
 
 <% if (req.query.status === 'trashed') { %>
-  <button id="bulkRestoreBtn" class="btn btn-success btn-sm mb-2" disabled>
+  <button id="bulkRestoreBtn" class="btn btn-success btn-sm me-2" disabled>
     <i class="fa fa-undo"></i> Restore Selected
   </button>
 <% } %>
-
+  </div>
 
 <% if (permissions.includes('Faculty Export')) { %>
 
@@ -67,32 +258,30 @@
  <% } %>
   
 </div>
-<hr>
 
 
-                <table id="example3" class="display table-responsive-lg">
+                <table id="facultyTable" class="display table table-striped table-bordered" style="width:100%">
                   <thead>
                     <tr>
-                       <th><input type="checkbox" id="selectAll" /></th> <!-- Bulk select all -->
-                      <th>Sr.No #</th>
+                       <th style="width: 50px;"><input type="checkbox" id="selectAll" /></th>
+                      <th style="width: 60px;">Sr.No</th>
                       <th>Category</th>
-
                       <th>Name</th>
                       <th>Phone</th>
                       <th>Subject</th>
-                      <th>Experience</th>
-                      <th>Image</th>
-                      <th>Status</th>
-                      <th>Actions</th>
+                      <th style="width: 100px;">Experience</th>
+                      <th style="width: 120px;">Image</th>
+                      <th style="width: 100px;">Status</th>
+                      <th style="width: 150px;">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
                     <% customers.forEach((post, index)=> { %>
                       <tr>
-                         <td>
+                         <td class="text-center">
                          <input type="checkbox" class="bulk-checkbox" value="<%= post.id %>" />
                          </td>
-                        <td>
+                        <td class="text-center">
                           <%= index + 1 %>
                         </td>
 
@@ -108,28 +297,28 @@
                         <td>
                           <%= post.subject %>
                         </td>
-                        <td>
+                        <td class="text-center">
                           <%= post.experience %>
                             <%= post.experience===1 ? 'Year' : 'Years' %>
                         </td>
 
-                        <td>
+                        <td class="text-center">
                       
   <% if (post.image) { %>
     <a href="<%= publicUrl + post.image %>" target="_blank">
-      <img src="<%= publicUrl + post.image %>" width="100" />
+      <img src="<%= publicUrl + post.image %>" style="width: 80px; height: 60px; object-fit: cover; border-radius: 4px;" />
     </a>
   <% } else { %>
-    No Image
+    <span class="text-muted">No Image</span>
   <% } %>
 </td>
 
 
-                        <td>
+                        <td class="text-center">
                           <% if (post.status==1) { %>
-                            <label class="badge badge-success">Active</label>
+                            <span class="badge badge-success">Active</span>
                             <% } else { %>
-                              <label class="badge badge-danger">Inactive</label>
+                              <span class="badge badge-danger">Inactive</span>
                               <% } %>
                         </td>
 
@@ -143,10 +332,11 @@
                               class="fa fa-trash"></i></a>
                         </td> -->
 
-                        <td>
+                        <td class="text-center">
                       <a
                         href="<%= actions_url %>-show/<%= post.id %>"
                         class="btn btn-primary shadow btn-xs sharp me-1"
+                        title="View"
                       >
                         <i class="fas fa-eye"></i>
                       </a>
@@ -155,6 +345,7 @@
                       <a
                         href="<%= actions_url %>-edit/<%= post.id %>"
                         class="btn btn-primary shadow btn-xs sharp me-1"
+                        title="Edit"
                       >
                         <i class="fas fa-pencil-alt"></i>
                       </a>
@@ -162,6 +353,7 @@
                       <a
                         href="<%= actions_url %>-delete/<%= post.id %>"
                         class="btn btn-danger shadow btn-xs sharp"
+                        title="Delete"
                         onclick="return confirm('Are you sure you want to delete this post?');"
                       >
                         <i class="fa fa-trash"></i>
@@ -169,7 +361,8 @@
                       <% } %> <% if (status === 'trashed') { %>
                       <a
                         href="<%= actions_url %>-restore/<%= post.id %>"
-                        class="btn btn-danger shadow btn-xs sharp"
+                        class="btn btn-success shadow btn-xs sharp me-1"
+                        title="Restore"
                         onclick="return confirm('Are you sure you want to restore this post?');"
                       >
                         <i class="fa fa-undo"></i>
@@ -178,6 +371,7 @@
                       <a
                         href="<%= actions_url %>-permanent-delete/<%= post.id %>"
                         class="btn btn-danger shadow btn-xs sharp"
+                        title="Permanent Delete"
                         onclick="return confirm('Are you sure you want to permanently delete this post?');"
                       >
                         <i class="fa fa-trash"></i>
@@ -207,94 +401,136 @@
 
       <script>
         $(document).ready(function () {
-          $("#order-listing").DataTable();
+          // Initialize DataTable with pagination
+          var table = $('#facultyTable').DataTable({
+            "pageLength": 15,
+            "lengthMenu": [[15, 25, 50, 100, -1], [15, 25, 50, 100, "All"]],
+            "order": [[1, "asc"]], // Sort by Sr.No column
+            "columnDefs": [
+              { "orderable": false, "targets": 0 }, // Disable sorting on checkbox column
+              { "orderable": false, "targets": 9 }  // Disable sorting on actions column
+            ],
+            "language": {
+              "search": "Search:",
+              "lengthMenu": "Show _MENU_ entries",
+              "info": "Showing _START_ to _END_ of _TOTAL_ entries",
+              "infoEmpty": "Showing 0 to 0 of 0 entries",
+              "infoFiltered": "(filtered from _MAX_ total entries)",
+              "paginate": {
+                "first": "First",
+                "last": "Last",
+                "next": "Next",
+                "previous": "Previous"
+              }
+            },
+            "drawCallback": function() {
+              // Re-attach event listeners after table redraw
+              updateBulkDeleteButton();
+              updateBulkRestoreButton();
+            }
+          });
+
+          // Update Sr.No after filtering/sorting
+          table.on('order.dt search.dt', function () {
+            let i = 1;
+            table.cells(null, 1, { search: 'applied', order: 'applied' }).every(function () {
+              this.data(i++);
+            });
+          }).draw();
         });
       </script>
 
       
         <script>
   const bulkDeleteBtn = document.getElementById("bulkDeleteBtn");
-  const checkboxes = document.querySelectorAll(".bulk-checkbox");
+  const bulkRestoreBtn = document.getElementById("bulkRestoreBtn");
   const selectAll = document.getElementById("selectAll");
 
   function updateBulkDeleteButton() {
+    if (!bulkDeleteBtn) return;
+    const checkboxes = document.querySelectorAll(".bulk-checkbox");
     const anyChecked = Array.from(checkboxes).some(cb => cb.checked);
     bulkDeleteBtn.disabled = !anyChecked;
   }
 
-  // On individual checkbox change
-  checkboxes.forEach(cb => cb.addEventListener("change", updateBulkDeleteButton));
-
-  // On select/deselect all
-  selectAll.addEventListener("change", function() {
-    checkboxes.forEach(cb => cb.checked = this.checked);
-    updateBulkDeleteButton();
-  });
-
-  // Bulk Delete click
-  bulkDeleteBtn.addEventListener("click", async function() {
-    const selectedIds = Array.from(checkboxes)
-                             .filter(cb => cb.checked)
-                             .map(cb => cb.value);
-
-    if (selectedIds.length === 0) return; // safety
-
-    if (!confirm("Are you sure you want to delete selected faculty?")) return;
-
-    try {
-      const response = await fetch("/admin/faculty/bulk-delete", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ids: selectedIds })
-      });
-
-      const result = await response.json();
-      alert(result.message);
-
-      if (result.success) location.reload();
-    } catch (err) {
-      alert("Error deleting faculty: " + err.message);
-    }
-  });
-</script>
-
-
-<script>
-  const bulkRestoreBtn = document.getElementById("bulkRestoreBtn");
-  
   function updateBulkRestoreButton() {
+    if (!bulkRestoreBtn) return;
+    const checkboxes = document.querySelectorAll(".bulk-checkbox");
     const anyChecked = Array.from(checkboxes).some(cb => cb.checked);
     bulkRestoreBtn.disabled = !anyChecked;
   }
 
-  // Checkbox change event
-  checkboxes.forEach(cb => cb.addEventListener("change", updateBulkRestoreButton));
+  // On individual checkbox change
+  $(document).on('change', '.bulk-checkbox', function() {
+    updateBulkDeleteButton();
+    updateBulkRestoreButton();
+  });
+
+  // On select/deselect all
+  $(document).on('change', '#selectAll', function() {
+    const isChecked = this.checked;
+    $('.bulk-checkbox:visible').prop('checked', isChecked);
+    updateBulkDeleteButton();
+    updateBulkRestoreButton();
+  });
+
+  // Bulk Delete click
+  if (bulkDeleteBtn) {
+    bulkDeleteBtn.addEventListener("click", async function() {
+      const checkboxes = document.querySelectorAll(".bulk-checkbox");
+      const selectedIds = Array.from(checkboxes)
+                               .filter(cb => cb.checked)
+                               .map(cb => cb.value);
+
+      if (selectedIds.length === 0) return;
+
+      if (!confirm("Are you sure you want to delete selected faculty?")) return;
+
+      try {
+        const response = await fetch("/admin/faculty/bulk-delete", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ids: selectedIds })
+        });
+
+        const result = await response.json();
+        alert(result.message);
+
+        if (result.success) location.reload();
+      } catch (err) {
+        alert("Error deleting faculty: " + err.message);
+      }
+    });
+  }
 
   // Bulk Restore click
-  bulkRestoreBtn.addEventListener("click", async function() {
-    const selectedIds = Array.from(checkboxes)
-                             .filter(cb => cb.checked)
-                             .map(cb => cb.value);
+  if (bulkRestoreBtn) {
+    bulkRestoreBtn.addEventListener("click", async function() {
+      const checkboxes = document.querySelectorAll(".bulk-checkbox");
+      const selectedIds = Array.from(checkboxes)
+                               .filter(cb => cb.checked)
+                               .map(cb => cb.value);
 
-    if (selectedIds.length === 0) return; // safety
+      if (selectedIds.length === 0) return;
 
-    if (!confirm("Are you sure you want to restore selected faculty?")) return;
+      if (!confirm("Are you sure you want to restore selected faculty?")) return;
 
-    try {
-      const response = await fetch("/admin/faculty/bulk-restore", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ids: selectedIds })
-      });
+      try {
+        const response = await fetch("/admin/faculty/bulk-restore", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ids: selectedIds })
+        });
 
-      const result = await response.json();
-      alert(result.message);
+        const result = await response.json();
+        alert(result.message);
 
-      if (result.success) location.reload();
-    } catch (err) {
-      alert("Error restoring faculty: " + err.message);
-    }
-  });
+        if (result.success) location.reload();
+      } catch (err) {
+        alert("Error restoring faculty: " + err.message);
+      }
+    });
+  }
 </script>
 
 <script>
